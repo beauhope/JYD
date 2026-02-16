@@ -415,21 +415,23 @@ onSnapshot(ideasQuery, (snapshot) => {
 
 
 /* ===================================
-   PWA REGISTER (SAFE for GitHub Pages)
+   PWA REGISTER (GitHub Pages Production)
 =================================== */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     try {
-      const swUrl = new URL("./sw.js", import.meta.url); // sw.js داخل نفس مجلد js
-      const reg = await navigator.serviceWorker.register(swUrl, { scope: "./" });
+      const reg = await navigator.serviceWorker.register("./sw.js");
       console.log("Service Worker Registered");
 
-      // Update found
+      // Detect update
       reg.addEventListener("updatefound", () => {
         const newWorker = reg.installing;
 
         newWorker?.addEventListener("statechange", () => {
-          if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+          if (
+            newWorker.state === "installed" &&
+            navigator.serviceWorker.controller
+          ) {
             showUpdateUI(reg);
           }
         });
@@ -440,6 +442,7 @@ if ("serviceWorker" in navigator) {
     }
   });
 }
+
 
 /* =========================
    Update UI
@@ -486,6 +489,7 @@ function showUpdateUI(registration) {
     registration.waiting?.postMessage("SKIP_WAITING");
   });
 }
+
 
 /* =========================
    Reload After Activate
