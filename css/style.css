@@ -172,19 +172,6 @@ button {
   margin-left:6px;
 }
 
-/* ===============================
-   GRID
-=============================== */
-
-.grid{
-  display:grid;
-  grid-template-columns:1.2fr .8fr;
-  gap:25px;
-}
-
-@media(max-width:900px){
-  .grid{grid-template-columns:1fr}
-}
 
 /* ===============================
    CARD
@@ -579,13 +566,16 @@ select option:hover {
 }
 
 .section-accordion.active .section-content {
-  max-height:2000px;
+  max-height:9999px;
   opacity:1;
   padding:20px;
+  
 }
 
+
 .section-icon {
-  transition:.3s ease;
+  font-size:14px;
+  transition: transform .3s ease;
 }
 
 .section-accordion.active .section-icon {

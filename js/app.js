@@ -72,6 +72,33 @@ const ideaCount = document.getElementById("ideaCount");
 
   let allTasks = [];
 
+
+  /* =========================
+   ACCORDION SYSTEM
+========================= */
+
+const accordionHeaders = document.querySelectorAll(".section-header");
+
+accordionHeaders.forEach(header => {
+
+  header.addEventListener("click", () => {
+
+    const parent = header.closest(".section-accordion");
+
+    // إغلاق باقي الأقسام
+    document.querySelectorAll(".section-accordion").forEach(section => {
+      if (section !== parent) {
+        section.classList.remove("active");
+      }
+    });
+
+    // فتح/إغلاق الحالي
+    parent.classList.toggle("active");
+
+  });
+
+});
+
   /* ===============================
      AUTH STATE
   ================================= */
@@ -510,19 +537,6 @@ navigator.serviceWorker?.addEventListener("controllerchange", () => {
 
 
 
-/* ===============================
-   GLOBAL ACCORDION
-================================ */
-document.querySelectorAll(".section-header").forEach(header => {
 
-  header.addEventListener("click", () => {
-
-    const accordion = header.parentElement;
-
-    accordion.classList.toggle("active");
-
-  });
-
-});
 
 
