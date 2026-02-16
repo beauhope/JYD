@@ -72,6 +72,23 @@ const ideaCount = document.getElementById("ideaCount");
 
   let allTasks = [];
 
+/* =========================
+   SCROLL TO TOP
+========================= */
+const scrollTopBtn = document.getElementById("scrollTopBtn");
+
+function toggleScrollTop(){
+  if (!scrollTopBtn) return;
+  const y = window.scrollY || document.documentElement.scrollTop;
+  scrollTopBtn.classList.toggle("show", y > 250);
+}
+
+window.addEventListener("scroll", toggleScrollTop, { passive: true });
+toggleScrollTop();
+
+scrollTopBtn?.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
 
   /* =========================
    ACCORDION SYSTEM
