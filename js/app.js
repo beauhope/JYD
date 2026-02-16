@@ -413,56 +413,54 @@ onSnapshot(ideasQuery, (snapshot) => {
 });
 
 
+
 /* ===================================
-   PWA UPDATE SYSTEM
+   PWA REGISTER (SAFE for GitHub Pages)
 =================================== */
-
 if ("serviceWorker" in navigator) {
+  window.addEventListener("load", async () => {
+    try {
+      const swUrl = new URL("./sw.js", import.meta.url); // sw.js داخل نفس مجلد js
+      const reg = await navigator.serviceWorker.register(swUrl, { scope: "./" });
+      console.log("Service Worker Registered");
 
-  navigator.serviceWorker.register("./js/sw.js")
-    .then(registration => {
+      // Update found
+      reg.addEventListener("updatefound", () => {
+        const newWorker = reg.installing;
 
-      // إذا كان هناك نسخة جديدة جاهزة
-      registration.addEventListener("updatefound", () => {
-
-        const newWorker = registration.installing;
-
-        newWorker.addEventListener("statechange", () => {
-
+        newWorker?.addEventListener("statechange", () => {
           if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-            showUpdateUI(registration);
+            showUpdateUI(reg);
           }
-
         });
-
       });
 
-    });
-
+    } catch (err) {
+      console.error("SW error:", err);
+    }
+  });
 }
 
 /* =========================
    Update UI
 ========================= */
-
 function showUpdateUI(registration) {
-
   const updateBar = document.createElement("div");
 
   updateBar.innerHTML = `
     <div style="
       position:fixed;
-      bottom:20px;
+      bottom:18px;
       left:50%;
       transform:translateX(-50%);
       background:#0f1935;
-      padding:14px 22px;
-      border-radius:16px;
-      border:1px solid rgba(198,167,74,.4);
-      box-shadow:0 10px 25px rgba(0,0,0,.6);
+      padding:12px 18px;
+      border-radius:14px;
+      border:1px solid rgba(198,167,74,.45);
+      box-shadow:0 12px 26px rgba(0,0,0,.55);
       z-index:9999;
       display:flex;
-      gap:12px;
+      gap:10px;
       align-items:center;
       font-size:14px;
     ">
@@ -470,10 +468,12 @@ function showUpdateUI(registration) {
       <button id="updateNowBtn"
         style="
           background:#c6a74a;
+          color:#0a1124;
           border:none;
           padding:6px 12px;
           border-radius:10px;
           cursor:pointer;
+          font-weight:600;
         ">
         تحديث الآن
       </button>
@@ -483,17 +483,13 @@ function showUpdateUI(registration) {
   document.body.appendChild(updateBar);
 
   document.getElementById("updateNowBtn").addEventListener("click", () => {
-
-    registration.waiting.postMessage("SKIP_WAITING");
-
+    registration.waiting?.postMessage("SKIP_WAITING");
   });
-
 }
 
 /* =========================
    Reload After Activate
 ========================= */
-
-navigator.serviceWorker.addEventListener("controllerchange", () => {
+navigator.serviceWorker?.addEventListener("controllerchange", () => {
   window.location.reload();
 });
