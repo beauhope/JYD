@@ -28,6 +28,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const lockScreen = document.getElementById("lockScreen");
   const app = document.getElementById("app");
+/* ===============================
+   CONNECTION STATUS (LOGOUT)
+=============================== */
+const statusBtn = document.getElementById("connectionStatus");
+
+statusBtn?.addEventListener("click", async (e) => {
+  e.preventDefault();
+
+  const confirmLogout = confirm("هل تريد تسجيل الخروج؟");
+  if (!confirmLogout) return;
+
+  try {
+    await auth.signOut();
+    // لا داعي ل reload غالباً لأن onAuthStateChanged سيُحدّث الواجهة
+    // لكن نتركه لضمان التحديث على كل الأجهزة:
+    location.reload();
+  } catch (err) {
+    console.error("Logout error:", err);
+    alert("حدث خطأ أثناء تسجيل الخروج");
+  }
+});
 
   /* ===============================
      TASK DOM
