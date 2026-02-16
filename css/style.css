@@ -386,3 +386,56 @@ select option {
 select option:hover {
   background-color: #14224a;
 }
+
+
+/* ================================
+   MOBILE OPTIMIZATION
+================================ */
+
+@media (max-width: 768px) {
+
+  body {
+    font-size: 14px; /* تصغير الخط العام قليلاً */
+  }
+
+  h1 {
+    font-size: 20px;
+  }
+
+  h2 {
+    font-size: 16px;
+  }
+
+  .pill {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 14px;
+  }
+
+  button {
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+
+  .task-card h3 {
+    font-size: 15px;
+  }
+
+  .task-body p {
+    font-size: 13px;
+  }
+
+  .task-info {
+    font-size: 12px;
+  }
+
+}
