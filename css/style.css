@@ -127,17 +127,7 @@ button {
   display:none;
 }
 
-.app-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:25px;
-}
 
-.title h1{
-  margin:0;
-  letter-spacing:.5px;
-}
 
 /* ===============================
    STATUS PILLS
@@ -469,4 +459,84 @@ select option:hover {
     font-size: 12px;
   }
 
+}
+
+
+
+.app-header{
+  display:flex;
+  justify-content:center;
+  text-align:center;
+  margin-bottom:30px;
+}
+
+.header-center{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+}
+
+.main-title{
+  font-size:32px;
+  font-weight:700;
+  background:linear-gradient(90deg,#c6a74a,#f1d37a);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  letter-spacing:.5px;
+}
+
+
+.status-indicator{
+  cursor:pointer;
+  font-size:14px;
+  padding:6px 14px;
+  border-radius:20px;
+  border:1px solid rgba(198,167,74,.3);
+  transition:.2s ease;
+}
+
+.status-indicator.online{
+  color:#7dffb3;
+  border-color:rgba(125,255,179,.4);
+}
+
+.status-indicator:hover{
+  box-shadow:0 0 10px rgba(198,167,74,.4);
+}
+
+
+.stats{
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+
+.status-icon {
+  width:18px;
+  height:18px;
+  margin-left:6px;
+  fill:currentColor;
+  transition:.3s ease;
+}
+
+.status-indicator {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  cursor:pointer;
+}
+
+/* ONLINE */
+.status-indicator.online {
+  color:#7dffb3;
+  border-color:rgba(125,255,179,.4);
+}
+
+/* OFFLINE */
+.status-indicator.offline {
+  color:#ff7b7b;
+  border-color:rgba(255,123,123,.4);
 }
