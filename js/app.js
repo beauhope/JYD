@@ -411,3 +411,89 @@ onSnapshot(ideasQuery, (snapshot) => {
   }
 
 });
+
+
+/* ===================================
+   PWA UPDATE SYSTEM
+=================================== */
+
+if ("serviceWorker" in navigator) {
+
+  navigator.serviceWorker.register("./js/sw.js")
+    .then(registration => {
+
+      // إذا كان هناك نسخة جديدة جاهزة
+      registration.addEventListener("updatefound", () => {
+
+        const newWorker = registration.installing;
+
+        newWorker.addEventListener("statechange", () => {
+
+          if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+            showUpdateUI(registration);
+          }
+
+        });
+
+      });
+
+    });
+
+}
+
+/* =========================
+   Update UI
+========================= */
+
+function showUpdateUI(registration) {
+
+  const updateBar = document.createElement("div");
+
+  updateBar.innerHTML = `
+    <div style="
+      position:fixed;
+      bottom:20px;
+      left:50%;
+      transform:translateX(-50%);
+      background:#0f1935;
+      padding:14px 22px;
+      border-radius:16px;
+      border:1px solid rgba(198,167,74,.4);
+      box-shadow:0 10px 25px rgba(0,0,0,.6);
+      z-index:9999;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      font-size:14px;
+    ">
+      نسخة جديدة متاحة 🚀
+      <button id="updateNowBtn"
+        style="
+          background:#c6a74a;
+          border:none;
+          padding:6px 12px;
+          border-radius:10px;
+          cursor:pointer;
+        ">
+        تحديث الآن
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(updateBar);
+
+  document.getElementById("updateNowBtn").addEventListener("click", () => {
+
+    registration.waiting.postMessage("SKIP_WAITING");
+
+  });
+
+}
+
+/* =========================
+   Reload After Activate
+========================= */
+
+navigator.serviceWorker.addEventListener("controllerchange", () => {
+  window.location.reload();
+});
