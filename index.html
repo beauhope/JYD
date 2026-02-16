@@ -216,15 +216,14 @@
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
 
-    const swUrl = new URL("./sw.js", import.meta.url);
-
     navigator.serviceWorker
-      .register(swUrl)
+      .register("./js/sw.js")
       .then(() => console.log("Service Worker Registered"))
       .catch(err => console.error("SW error:", err));
 
   });
 }
+
 
 
 </script>
