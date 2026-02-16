@@ -566,7 +566,7 @@ select option:hover {
 }
 
 .section-accordion.active .section-content {
-  max-height:9999px;
+  max-height:none;
   opacity:1;
   padding:20px;
   
