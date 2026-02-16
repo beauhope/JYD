@@ -44,6 +44,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterSelect = document.getElementById("filterTask");
   const sortSelect = document.getElementById("sortTask");
 
+  const statusBtn = document.getElementById("connectionStatus");
+statusBtn?.addEventListener("click", async () => {
+  const confirmLogout = confirm("هل تريد تسجيل الخروج؟");
+
+  if(confirmLogout){
+    await auth.signOut();
+    location.reload();
+  }
+});
+
   /* IDEA DOM */
   
   const ideaInput = document.getElementById("ideaInput");
@@ -498,17 +508,21 @@ navigator.serviceWorker?.addEventListener("controllerchange", () => {
   window.location.reload();
 });
 
-/* =========================
-   log in & out
-========================= */
 
-const statusBtn = document.getElementById("connectionStatus");
 
-statusBtn?.addEventListener("click", async () => {
-  const confirmLogout = confirm("هل تريد تسجيل الخروج؟");
+/* ===============================
+   GLOBAL ACCORDION
+================================ */
+document.querySelectorAll(".section-header").forEach(header => {
 
-  if(confirmLogout){
-    await auth.signOut();
-    location.reload();
-  }
+  header.addEventListener("click", () => {
+
+    const accordion = header.parentElement;
+
+    accordion.classList.toggle("active");
+
+  });
+
 });
+
+
