@@ -5,7 +5,7 @@
    - Update flow ready
 ================================ */
 
-const VERSION = "mytodo-v3";
+const VERSION = "mytodo-v4";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
