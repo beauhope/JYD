@@ -165,6 +165,13 @@
         <input id="taskDue" type="datetime-local">
       </div>
     </div>
+<div class="field" style="max-width:200px">
+  <label>التصنيف</label>
+  <select id="taskType">
+    <option value="personal">شخصي</option>
+    <option value="work">عمل</option>
+  </select>
+</div>
 
     <div class="row" style="margin-top:10px">
       <div class="field">
@@ -221,6 +228,13 @@
         </select>
       </div>
     </div>
+<div class="field" style="max-width:200px">
+  <label>التصنيف</label>
+  <select id="ideaType">
+    <option value="personal">شخصي</option>
+    <option value="work">عمل</option>
+  </select>
+</div>
 
     <div class="row" style="margin-top:10px">
       <button id="addIdeaBtn" class="btn-gold">حفظ الفكرة</button>
@@ -242,6 +256,7 @@
     </svg>
   </div>
 
+
   <div class="section-content">
 
     <!-- Toolbar -->
@@ -254,7 +269,11 @@
         <option value="overdue">المتأخرة</option>
         <option value="done">المنجزة</option>
       </select>
-
+      <select id="typeFilter">
+        <option value="all">الكل</option>
+        <option value="personal">شخصي</option>
+        <option value="work">عمل</option>
+      </select>
       <select id="sortTask">
         <option value="newest">الأحدث إضافة</option>
         <option value="oldest">الأقدم إضافة</option>
@@ -282,6 +301,13 @@
   </div>
 
   <div class="section-content">
+
+    <select id="ideaTypeFilter" style="margin-bottom:12px;">
+  <option value="all">الكل</option>
+  <option value="personal">شخصي</option>
+  <option value="work">عمل</option>
+</select>
+
     <ul id="ideaList" class="list"></ul>
   </div>
 </div>
