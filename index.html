@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MyTodo</title>
+<!-- =========================
+     FAVICON — MyTodo
+========================= -->
+<link rel="icon" type="image/svg+xml"
+  href='data:image/svg+xml,
+  <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64">
+    <defs>
+      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="%230b1020"/>
+        <stop offset="1" stop-color="%234f7cff"/>
+      </linearGradient>
+    </defs>
+
+    <!-- الخلفية -->
+    <rect width="64" height="64" rx="14" fill="url(%23g)"/>
+
+    <!-- إطار -->
+    <rect x="4" y="4" width="56" height="56" rx="12"
+          fill="none" stroke="%23fbbf24" stroke-width="2"/>
+
+    <!-- النص الرئيسي -->
+    <text x="50%" y="52%" text-anchor="middle"
+          font-family="Arial, sans-serif"
+          font-size="22"
+          font-weight="800"
+          fill="%23eef2ff">MT</text>
+
+    <!-- النص الصغير -->
+    <text x="50%" y="78%" text-anchor="middle"
+          font-family="Arial, sans-serif"
+          font-size="10"
+          font-weight="700"
+          fill="%23fbbf24">TODO</text>
+  </svg>'>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a1124">
+
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<!-- 🔐 LOGIN -->
+<div id="lockScreen" class="lock-screen">
+  <div class="login-box">
+    <form id="loginForm">
+      <h2>MyTodo Login</h2>
+
+      <input id="email"
+        type="email"
+        placeholder="Email"
+        autocomplete="email"
+        required>
+
+      <input id="password"
+        type="password"
+        placeholder="Password"
+        autocomplete="current-password"
+        required>
+
+      <button type="button" id="registerBtn" class="btn-primary">Register</button>
+      <button type="button" id="loginBtn" class="btn-primary">Login</button>
+
+      <p id="status">Not logged in</p>
+    </form>
+  </div>
+</div>
+
+<!-- 🧠 APP -->
+<div id="app" class="app hidden">
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="title">
+      <h1>لوحة إدارة مهامي</h1>
+      <span id="today"></span>
+    </div>
+
+    <div class="stats">
+      <div class="pill">
+        الإجمالي:
+        <b id="totalCount">0</b>
+      </div>
+
+      <div class="pill">
+        <span class="dot good"></span>
+        منجزة:
+        <b id="doneCount">0</b>
+      </div>
+
+      <div class="pill">
+        <span class="dot warn"></span>
+        مطلوبة:
+        <b id="todoCount">0</b>
+      </div>
+
+      <div class="pill late">
+        <span class="dot late-dot"></span>
+        متأخرة:
+        <b id="overdueCount">0</b>
+      </div>
+    </div>
+  </header>
+
+  <!-- GRID -->
+  <div class="grid">
+
+    <!-- TASKS -->
+    <section class="card">
+
+      <h2>إضافة مهمة</h2>
+
+      <div class="row">
+        <div class="field">
+          <label>عنوان المهمة</label>
+          <input id="taskTitle" placeholder="مثال: إنهاء تقرير الربع السنوي">
+        </div>
+
+        <div class="field" style="max-width:220px">
+          <label>تاريخ/وقت الاستحقاق (اختياري)</label>
+          <input id="taskDue" type="datetime-local">
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <div class="field">
+          <label>تفاصيل</label>
+          <textarea id="taskDesc" placeholder="ملاحظات، متطلبات، ملفات..."></textarea>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button id="addTaskBtn" class="btn-primary">إضافة</button>
+        <button id="clearTaskBtn" class="btn-primary">مسح الحقول</button>
+        <button id="deleteDone" class="btn-danger">حذف المنجزة</button>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <input id="searchTask" placeholder="بحث في المهام...">
+
+        <select id="filterTask">
+          <option value="all">الكل</option>
+          <option value="todo">المطلوبة</option>
+          <option value="overdue">المتأخرة</option>
+          <option value="done">المنجزة</option>
+        </select>
+
+        <select id="sortTask">
+          <option value="newest">الأحدث إضافة</option>
+          <option value="oldest">الأقدم إضافة</option>
+          <option value="dueAsc">الأقرب موعدًا</option>
+          <option value="dueDesc">الأبعد موعدًا</option>
+        </select>
+      </div>
+
+      <ul id="taskList" class="list"></ul>
+
+    </section>
+
+    <!-- IDEAS -->
+    <!-- IDEAS -->
+<aside class="card">
+  <h2>
+    💡 أفكار مستقبلية
+    <span class="idea-counter">(<b id="ideaCount">0</b>)</span>
+  </h2>
+
+  <div class="row">
+    <div class="field">
+      <label>عنوان الفكرة</label>
+      <input id="ideaInput" placeholder="أدخل عنوان الفكرة">
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:10px">
+    <div class="field">
+      <label>تفاصيل الفكرة</label>
+      <textarea id="ideaDesc"></textarea>
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:10px">
+    <div class="field">
+      <label>الأولوية</label>
+      <select id="ideaPriority">
+        <option value="low">منخفضة</option>
+        <option value="medium">متوسطة</option>
+        <option value="high">عالية</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:10px">
+    <button id="addIdeaBtn" class="btn-gold">حفظ الفكرة</button>
+  </div>
+
+  <ul id="ideaList" class="list"></ul>
+</aside>
+
+
+
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js")
+      .then(() => console.log("Service Worker Registered"))
+      .catch(err => console.error("SW error:", err));
+  });
+}
+</script>
+
+</body>
+</html>
