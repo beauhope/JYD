@@ -1,4 +1,18 @@
 /* ===============================
+   LOCAL CAIRO FONT
+=============================== */
+
+@font-face {
+  font-family: "Cairo";
+  src: url("../fonts/Cairo.woff2") format("woff2");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+/* ===============================
    LUXURY DARK BLUE + GOLD THEME
 =============================== */
 
@@ -27,20 +41,27 @@
 
 body{
   margin:0;
-   font-family: "Segoe UI", "Tahoma", system-ui, sans-serif;
+  font-family: "Cairo", "Segoe UI", Tahoma, sans-serif;
+  letter-spacing: .2px;
 
   background:
     radial-gradient(circle at 20% 20%, rgba(198,167,74,.06), transparent 40%),
     linear-gradient(135deg,var(--bg) 0%,var(--bg2) 100%);
   color:var(--text);
 }
+
 h1, h2, h3 {
-  font-weight: 600;
+  font-weight: 700;
 }
 
 p, small {
   font-weight: 400;
 }
+
+button {
+  font-weight: 600;
+}
+
 
 /* ===============================
    LOGIN
