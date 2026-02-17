@@ -681,3 +681,9 @@ select option:hover {
   background:rgba(59,130,246,.15);
   color:#3b82f6;
 }
+.status-icon,
+.section-icon {
+  pointer-events: none;
+}
+.status-icon,
+.section-icon { pointer-events:none; }
