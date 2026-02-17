@@ -58,8 +58,8 @@ statusBtn?.addEventListener("click", async (e) => {
     /* ===============================
      LIMIT INPUT LENGTH
   =============================== */
-  const TITLE_MAX = 60;   // عدّل الرقم كما تريد
-  const DESC_MAX  = 180;  // عدّل الرقم كما تريد
+  const TITLE_MAX = 80;   // عدّل الرقم كما تريد
+  const DESC_MAX  = 1000;  // عدّل الرقم كما تريد
 
   // enforce maxLength on inputs
   if (titleInput) titleInput.maxLength = TITLE_MAX;

@@ -897,8 +897,9 @@ select option:hover {
   }
 
   .planner-table{
-    min-width: 560px;         /* أقل من قبل */
-    font-size: 11px;          /* تصغير عام للجدول */
+    min-width: 0;          /* ✅ يسمح للجدول يصغر حسب الشاشة */
+    width: 100%;
+    font-size: 10px;          /* تصغير عام للجدول */
   }
 
   .planner-table thead th{
@@ -930,17 +931,23 @@ select option:hover {
 
   /* فهرس الرموز مريح على الموبايل */
   .planner-legend{
-    padding: 8px 10px;
+    padding: 6px 8px;
     gap: 8px;
   }
   .planner-legend small{
-    font-size: 11px;
+    font-size: 9px;
   }
 }
+
 .planner-title{
-  display:inline-block;
-  max-width: 260px;        /* عدّل حسب ما يناسبك */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis; /* … */
+  display:block;
+  max-width:none;
+
+  white-space: normal;     /* ✅ يسمح بالـ wrap */
+  overflow: visible;
+  text-overflow: unset;
+
+  line-height:1.30;
+  word-break: break-word;  /* ✅ يمنع قص الكلمات الطويلة */
 }
+
