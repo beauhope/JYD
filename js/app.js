@@ -103,6 +103,65 @@ statusBtn?.addEventListener("click", async (e) => {
   const plannerBody = document.getElementById("plannerBody");
   const plannerCount = document.getElementById("plannerCount");
 
+/* ===============================
+   PLANNER -> JUMP TO TASK (Option A)
+=============================== */
+function openAccordionFor(el) {
+  const section = el?.closest?.(".section-accordion");
+  if (!section) return;
+
+  // close others (نفس منطقك)
+  document.querySelectorAll(".section-accordion").forEach(s => {
+    if (s !== section) {
+      s.classList.remove("active");
+      const c = s.querySelector(".section-content");
+      if (c) c.style.maxHeight = "0px";
+    }
+  });
+
+  section.classList.add("active");
+  const content = section.querySelector(".section-content");
+  if (content) content.style.maxHeight = content.scrollHeight + "px";
+}
+
+function resetTasksViewFilters() {
+  if (searchInput) searchInput.value = "";
+  if (filterSelect) filterSelect.value = "all";
+  if (typeFilter) typeFilter.value = "all";
+  // sort لا يخفي المهام، خلّيه كما هو (أو رجّعه newset لو تحب)
+  // if (sortSelect) sortSelect.value = "newest";
+}
+
+function jumpToTask(taskId) {
+  if (!taskList || !taskId) return;
+
+  // افتح أكورديون "عرض المهام"
+  openAccordionFor(taskList);
+
+  // صفّر البحث/الفلاتر حتى لا تكون المهمة مخفية
+  resetTasksViewFilters();
+  renderTasks();
+
+  // بعد إعادة الرسم، ابحث عن المهمة
+  const li = taskList.querySelector(`li[data-id="${CSS.escape(taskId)}"]`);
+  if (!li) {
+    alert("المهمة موجودة لكن قد تكون مخفية بسبب فلتر/ترتيب.");
+    return;
+  }
+
+  // Scroll + Highlight
+  li.scrollIntoView({ behavior: "smooth", block: "center" });
+  li.classList.add("jump-highlight");
+  setTimeout(() => li.classList.remove("jump-highlight"), 1400);
+}
+
+// Event delegation على بلانر
+plannerBody?.addEventListener("click", (e) => {
+  const btn = e.target.closest(".planner-link");
+  if (!btn) return;
+  const id = btn.getAttribute("data-jump");
+  jumpToTask(id);
+});
 
   /* ===============================
      IDEA DOM
@@ -638,9 +697,13 @@ tasks.sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
     <div class="planner-time">${timeStr}</div>
   </td>
 
-  <td class="planner-title-cell">
-  <span class="planner-title">${task.title || ""}</span>
-</td>
+  <td>
+    <button type="button"
+            class="planner-link planner-title"
+            data-jump="${task.id}">
+      ${task.title || ""}
+    </button>
+  </td>
 
   <td>
     <span class="planner-type ${task.type || "personal"}">${typeLabel}</span>
@@ -652,6 +715,7 @@ tasks.sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
     </span>
   </td>
 `;
+
 
 
       plannerBody.appendChild(tr);

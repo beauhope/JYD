@@ -972,4 +972,31 @@ select option:hover {
   word-break: break-word;  /* ✅ يمنع قص الكلمات الطويلة */
 }
 
- 
+ /* Planner title as link */
+.planner-link{
+  display:block;
+  width:100%;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  color: var(--text);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: right;
+}
+
+.planner-title{
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.25;
+}
+
+/* highlight after jump */
+.jump-highlight{
+  outline: 2px solid rgba(198,167,74,.55);
+  box-shadow: 0 0 18px rgba(198,167,74,.25);
+  border-radius: 14px;
+  transition: .25s ease;
+}
