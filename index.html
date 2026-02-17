@@ -249,6 +249,43 @@
   </div>
 </div>
 
+<!-- ===============================
+     SECTION — Planner Table
+================================ -->
+<div class="section-accordion">
+
+  <div class="section-header">
+    <span>📅 المخطط الزمني للمهام (<b id="plannerCount">0</b>)</span>
+    <svg class="section-icon" width="18" height="18" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M7 10l5 5 5-5z"/>
+    </svg>
+  </div>
+
+  <div class="section-content">
+
+    <div class="toolbar" style="margin-top:0;">
+      <small style="color:var(--muted);">
+        يعرض فقط المهام التي لها تاريخ/وقت استحقاق.
+      </small>
+    </div>
+
+    <div class="planner-wrap">
+      <table class="planner-table">
+        <thead>
+          <tr>
+            <th>التاريخ</th>
+            <th>الوقت</th>
+            <th>العنوان</th>
+            <th>التصنيف</th>
+            <th>الحالة</th>
+          </tr>
+        </thead>
+        <tbody id="plannerBody"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
 
 <!-- ===============================
      SECTION 3 — عرض المهام

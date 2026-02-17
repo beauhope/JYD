@@ -72,6 +72,12 @@ statusBtn?.addEventListener("click", async (e) => {
   const doneCount = document.getElementById("doneCount");
   const todoCount = document.getElementById("todoCount");
   const overdueCount = document.getElementById("overdueCount");
+    /* ===============================
+     PLANNER DOM
+  =============================== */
+  const plannerBody = document.getElementById("plannerBody");
+  const plannerCount = document.getElementById("plannerCount");
+
 
   /* ===============================
      IDEA DOM
@@ -176,6 +182,7 @@ statusBtn?.addEventListener("click", async (e) => {
       });
 
       renderTasks();
+      renderPlanner();
       updateStats();
     });
 
@@ -514,6 +521,75 @@ tasks.sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
       `;
 
       taskList.appendChild(li);
+    });
+  }
+
+
+    /* ===============================
+     RENDER PLANNER (Scheduled Tasks Table)
+  =============================== */
+  function renderPlanner() {
+    if (!plannerBody || !plannerCount) return;
+
+    // فقط المهام التي لها due
+    const scheduled = allTasks
+      .filter(t => !!t.due)
+      .map(t => ({
+        ...t,
+        _dueDate: toDateSafe(t.due)
+      }))
+      .filter(t => t._dueDate) // تأكيد التحويل
+      .sort((a, b) => a._dueDate - b._dueDate);
+
+    plannerCount.textContent = String(scheduled.length);
+    plannerBody.innerHTML = "";
+
+    if (scheduled.length === 0) {
+      plannerBody.innerHTML = `
+        <tr>
+          <td colspan="5" style="color:var(--muted); padding:14px; text-align:center;">
+            لا توجد مهام مجدولة بتاريخ/وقت حتى الآن.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    scheduled.forEach(task => {
+      const d = task._dueDate;
+
+      const dateStr = d.toLocaleDateString("ar", {
+        year: "numeric", month: "2-digit", day: "2-digit"
+      });
+
+      const timeStr = d.toLocaleTimeString("ar", {
+        hour: "2-digit", minute: "2-digit"
+      });
+
+      const typeLabel = (task.type === "work") ? "عمل" : "شخصي";
+      const statusLabel = task.done ? "منجزة" : (isOverdue(task) ? "متأخرة" : "مطلوبة");
+
+      const tr = document.createElement("tr");
+      tr.className = `planner-row ${task.done ? "is-done" : ""} ${isOverdue(task) ? "is-overdue" : ""}`;
+
+      tr.innerHTML = `
+        <td>${dateStr}</td>
+        <td>${timeStr}</td>
+        <td>
+          <strong>${task.title || ""}</strong>
+          ${task.desc ? `<div class="planner-desc">${task.desc}</div>` : ``}
+        </td>
+        <td>
+          <span class="planner-type ${task.type || "personal"}">${typeLabel}</span>
+        </td>
+        <td>
+          <span class="planner-status ${task.done ? "done" : (isOverdue(task) ? "overdue" : "todo")}">
+            ${statusLabel}
+          </span>
+        </td>
+      `;
+
+      plannerBody.appendChild(tr);
     });
   }
 

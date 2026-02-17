@@ -732,3 +732,151 @@ select option:hover {
 .section-icon {
   pointer-events: none;
 }
+
+/* ===============================
+   PLANNER TABLE
+=============================== */
+/* ===============================
+   PLANNER TABLE (ENHANCED)
+=============================== */
+.planner-wrap{
+  overflow:auto;
+  border:1px solid rgba(198,167,74,.35);
+  border-radius:18px;
+  box-shadow: inset 0 0 25px rgba(198,167,74,.05);
+}
+
+.planner-table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  min-width:740px;
+  background:rgba(255,255,255,.015);
+}
+
+/* HEADER */
+.planner-table thead th{
+  position:sticky;
+  top:0;
+  z-index:2;
+
+  text-align:center;
+  padding:14px 12px;
+
+  color:var(--gold);
+  font-weight:800;
+  letter-spacing:.2px;
+
+  background:linear-gradient(145deg, rgba(198,167,74,.14), rgba(16,26,53,.65));
+  border-bottom:1px solid rgba(198,167,74,.35);
+}
+
+/* CELLS */
+.planner-table th,
+.planner-table td{
+  padding:12px 12px;
+  text-align:center;          /* ✅ توسيط */
+  vertical-align:middle;      /* ✅ توسيط عمودي */
+  border-bottom:1px solid rgba(198,167,74,.18); /* ✅ خطوط ذهبية */
+}
+
+/* Vertical gold lines */
+.planner-table td + td,
+.planner-table th + th{
+  border-right:1px solid rgba(198,167,74,.12);
+}
+
+/* ROW HOVER */
+.planner-table tbody tr{
+  transition:.2s ease;
+}
+.planner-table tbody tr:hover{
+  background:rgba(198,167,74,.06);
+  box-shadow: inset 0 0 0 1px rgba(198,167,74,.18);
+}
+
+/* Title cell: allow nicer reading */
+.planner-table td:nth-child(3){
+  text-align:right; /* العنوان بالعربي أفضل يمين */
+  vertical-align:middle;
+  line-height:1.5;
+}
+
+/* Description */
+.planner-desc{
+  margin-top:6px;
+  color:var(--muted);
+  font-size:12px;
+  text-align:right;
+}
+
+/* Type badge */
+.planner-type{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:5px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  border:1px solid rgba(198,167,74,.22);
+  background:rgba(255,255,255,.03);
+}
+
+.planner-type.work{
+  border-color:rgba(34,197,94,.28);
+  color:#22c55e;
+  background:rgba(34,197,94,.10);
+}
+
+.planner-type.personal{
+  border-color:rgba(59,130,246,.28);
+  color:#3b82f6;
+  background:rgba(59,130,246,.10);
+}
+
+/* Status badge */
+.planner-status{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:5px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  border:1px solid rgba(198,167,74,.22);
+  min-width:78px;
+}
+
+.planner-status.todo{
+  color:#e6ecff;
+  background:rgba(255,255,255,.03);
+}
+
+.planner-status.overdue{
+  color:#ffb4b4;
+  border-color:rgba(255,123,123,.35);
+  background:rgba(255,123,123,.10);
+}
+
+.planner-status.done{
+  color:#fff3cf;
+  border-color:rgba(198,167,74,.35);
+  background:rgba(198,167,74,.12);
+}
+
+/* Done / Overdue rows (subtle) */
+.planner-row.is-done{
+  background:rgba(198,167,74,.04);
+}
+
+.planner-row.is-overdue{
+  background:rgba(255,123,123,.04);
+}
+
+/* Mobile: keep table usable */
+@media (max-width:768px){
+  .planner-table{
+    min-width:680px;
+  }
+}
