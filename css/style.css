@@ -925,7 +925,7 @@ select option:hover {
 
   .planner-table thead th{
     padding: 10px 8px;
-    font-size: 11px;
+    font-size: 9px;
   }
 
   .planner-table td{
@@ -968,7 +968,7 @@ select option:hover {
   overflow: visible;
   text-overflow: unset;
 
-  line-height:1.1;
+  line-height:1;
   word-break: break-word;  /* ✅ يمنع قص الكلمات الطويلة */
 }
 
