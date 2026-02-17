@@ -5,7 +5,7 @@
    - Update flow ready
 ================================ */
 
-const VERSION = "mytodo-v4";
+const VERSION = "mytodo-v2";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -49,6 +49,26 @@ self.addEventListener("install", (event) => {
     );
 
     self.skipWaiting();
+  })());
+});
+
+
+/* -------------------------------
+   Activate: take control + clean old caches
+-------------------------------- */
+self.addEventListener("activate", (event) => {
+  event.waitUntil((async () => {
+    // امسك كل الصفحات فورًا (مهم للموبايل/PWA)
+    await self.clients.claim();
+
+    // احذف أي كاش قديم (اختياري لكنه يحل 0/10 بنسبة كبيرة)
+    const keys = await caches.keys();
+    await Promise.all(
+      keys.map((k) => {
+        // احذف أي كاش غير الكاش الحالي
+        if (k !== STATIC_CACHE) return caches.delete(k);
+      })
+    );
   })());
 });
 
