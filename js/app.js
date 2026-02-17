@@ -350,6 +350,36 @@ statusBtn?.addEventListener("click", async (e) => {
   /* ===============================
      HELPERS
   =============================== */
+  // تحويل Firestore Timestamp أو ISO string إلى Date
+  function toDateSafe(value) {
+    if (!value) return null;
+
+    // Firestore Timestamp
+    if (typeof value === "object" && typeof value.toDate === "function") {
+      try { return value.toDate(); } catch { return null; }
+    }
+
+    // ISO string or anything Date can parse
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return null;
+    return d;
+  }
+
+  // تنسيق تاريخ/وقت بالعربية
+  function formatDateTime(value) {
+    const d = toDateSafe(value);
+    if (!d) return "—";
+
+    return d.toLocaleString("ar", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  }
+
+
   function isOverdue(task) {
     if (!task?.due || task?.done) return false;
     return new Date(task.due) < new Date();
@@ -409,9 +439,15 @@ statusBtn?.addEventListener("click", async (e) => {
             </h3>
           </div>
 
-          <div class="task-body">
+             <div class="task-body">
             <p>${task.desc || "بدون تفاصيل"}</p>
+
+            <p class="task-info" style="margin:8px 0 0 0; color: var(--muted);">
+              📅 الاستحقاق:
+              <b>${task.due ? formatDateTime(task.due) : "غير محدد"}</b>
+            </p>
           </div>
+
 
           <div class="task-footer">
             <div class="task-actions">
@@ -478,9 +514,14 @@ statusBtn?.addEventListener("click", async (e) => {
             </span>
           </div>
 
-          <div class="task-body">
+                   <div class="task-body">
             <p>${idea.desc || "بدون تفاصيل"}</p>
+
+            <p class="task-info" style="margin:8px 0 0 0; color: var(--muted);">
+              🕒 تاريخ الكتابة: <b>${formatDateTime(idea.createdAt)}</b>
+            </p>
           </div>
+
 
           <div class="task-footer">
             <div class="task-actions">
