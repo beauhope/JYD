@@ -890,7 +890,50 @@ select option:hover {
 
 /* Mobile: keep table usable */
 @media (max-width:768px){
+
+  /* 1) خليه يأخذ عرض الموبايل بدون إجبار min-width */
   .planner-table{
-    min-width:680px;
+    min-width:0;
+    width:100%;
+    table-layout:fixed;   /* يخلي الأعمدة تتوزع */
+  }
+
+  /* 2) تصغير المسافات والخط */
+  .planner-table thead th,
+  .planner-table td{
+    padding:10px 8px;
+    font-size:12px;
+  }
+
+  /* 3) السماح بكسر النص بدل ما يوسّع الجدول */
+  .planner-table th,
+  .planner-table td{
+    white-space:normal;
+    word-break:break-word;
+  }
+
+  /* 4) العنوان (عمود 3) يبقى يمين لكن بخط أصغر */
+  .planner-table td:nth-child(3){
+    text-align:right;
+    font-size:12px;
+    line-height:1.35;
+  }
+
+  .planner-desc{
+    font-size:11px;
+  }
+
+  /* 5) البادجات أصغر */
+  .planner-type,
+  .planner-status{
+    padding:4px 8px;
+    font-size:11px;
+    min-width:64px;
+  }
+
+  /* 6) لمسة: لا نحتاج تمرير أفقي غالبًا */
+  .planner-wrap{
+    overflow-x:hidden;
   }
 }
+
