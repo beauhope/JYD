@@ -638,10 +638,9 @@ tasks.sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
     <div class="planner-time">${timeStr}</div>
   </td>
 
-  <td>
-    <strong>${task.title || ""}</strong>
-    ${task.desc ? `<div class="planner-desc">${task.desc}</div>` : ``}
-  </td>
+  <td class="planner-title-cell">
+  <span class="planner-title">${task.title || ""}</span>
+</td>
 
   <td>
     <span class="planner-type ${task.type || "personal"}">${typeLabel}</span>

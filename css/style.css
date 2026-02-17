@@ -764,9 +764,30 @@ select option:hover {
   width:100%;
   border-collapse:separate;
   border-spacing:0;
-  min-width:740px;
+
+  /* ✅ يمنع التمدد ويخلي الأعمدة تتوزع صح */
+  table-layout: fixed;
+
+  /* ✅ مهم: لا تفرض عرض كبير */
+  min-width: 0;
+
   background:rgba(255,255,255,.015);
+
+  
 }
+/* توزيع الأعمدة: الموعد / العنوان / التصنيف / الحالة */
+.planner-table th:nth-child(1),
+.planner-table td:nth-child(1){ width: 26%; }
+
+.planner-table th:nth-child(2),
+.planner-table td:nth-child(2){ width: 44%; }
+
+.planner-table th:nth-child(3),
+.planner-table td:nth-child(3){ width: 15%; }
+
+.planner-table th:nth-child(4),
+.planner-table td:nth-child(4){ width: 15%; }
+
 
 /* HEADER */
 .planner-table thead th{
@@ -947,7 +968,8 @@ select option:hover {
   overflow: visible;
   text-overflow: unset;
 
-  line-height:1.30;
+  line-height:1.1.25;
   word-break: break-word;  /* ✅ يمنع قص الكلمات الطويلة */
 }
 
+ 
