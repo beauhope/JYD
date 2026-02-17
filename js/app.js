@@ -418,6 +418,16 @@ statusBtn?.addEventListener("click", async (e) => {
     if (typeValue !== "all") tasks = tasks.filter(t => (t.type || "personal") === typeValue);
 
     const sort = sortSelect?.value || "newest";
+    // === PATCH: ENABLE "oldest" SORT (createdAt ASC) ===
+if (sort === "oldest") {
+  tasks.sort((a, b) => {
+    const da = toDateSafe(a.createdAt)?.getTime() || 0;
+    const db = toDateSafe(b.createdAt)?.getTime() || 0;
+    return da - db;
+  });
+}
+// === END PATCH ===
+
     if (sort === "dueAsc") tasks.sort((a, b) => new Date(a.due || 0) - new Date(b.due || 0));
     if (sort === "dueDesc") tasks.sort((a, b) => new Date(b.due || 0) - new Date(a.due || 0));
 

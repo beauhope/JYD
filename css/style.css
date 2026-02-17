@@ -573,10 +573,16 @@ select option:hover {
 }
 
 
-.section-icon {
-  font-size:14px;
+/* === PATCH: Accordion triangle color + size === */
+.section-icon{
+  width: 30px;              /* أكبر قليلًا (كان 18 في HTML) */
+  height:30px;
+  color: var(--gold);      /* يجعل fill="currentColor" يصير ذهبي */
+  flex:0 0 auto;
   transition: transform .3s ease;
 }
+/* === END PATCH === */
+
 
 .section-accordion.active .section-icon {
   transform:rotate(180deg);
