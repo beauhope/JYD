@@ -604,7 +604,7 @@ tasks.sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
     if (scheduled.length === 0) {
       plannerBody.innerHTML = `
         <tr>
-          <td colspan="5" style="color:var(--muted); padding:14px; text-align:center;">
+          <td colspan="4" style="color:var(--muted); padding:14px; text-align:center;">
             لا توجد مهام مجدولة بتاريخ/وقت حتى الآن.
           </td>
         </tr>
@@ -633,22 +633,27 @@ tasks.sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
       tr.className = `planner-row ${task.done ? "is-done" : ""} ${isOverdue(task) ? "is-overdue" : ""}`;
 
       tr.innerHTML = `
-        <td>${dateStr}</td>
-        <td>${timeStr}</td>
-        <td>
-        <strong class="planner-title">${task.title || ""}</strong>
-        </td>
+  <td class="planner-when">
+    <div class="planner-date">${dateStr}</div>
+    <div class="planner-time">${timeStr}</div>
+  </td>
 
-        <td>
-          <span class="planner-type ${task.type || "personal"}">${typeLabel}</span>
-        </td>
-        <td>
-          <span class="planner-status ${statusKey}">
-        ${statusLabel}
-        </span>
+  <td>
+    <strong>${task.title || ""}</strong>
+    ${task.desc ? `<div class="planner-desc">${task.desc}</div>` : ``}
+  </td>
 
-        </td>
-      `;
+  <td>
+    <span class="planner-type ${task.type || "personal"}">${typeLabel}</span>
+  </td>
+
+  <td>
+    <span class="planner-status ${task.done ? "done" : (isOverdue(task) ? "overdue" : "todo")}">
+      ${statusLabel}
+    </span>
+  </td>
+`;
+
 
       plannerBody.appendChild(tr);
     });
