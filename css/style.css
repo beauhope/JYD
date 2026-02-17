@@ -937,3 +937,10 @@ select option:hover {
     font-size: 11px;
   }
 }
+.planner-title{
+  display:inline-block;
+  max-width: 260px;        /* عدّل حسب ما يناسبك */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* … */
+}

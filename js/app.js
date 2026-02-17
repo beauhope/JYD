@@ -55,6 +55,31 @@ statusBtn?.addEventListener("click", async (e) => {
   =============================== */
   const titleInput = document.getElementById("taskTitle");
   const descInput = document.getElementById("taskDesc");
+    /* ===============================
+     LIMIT INPUT LENGTH
+  =============================== */
+  const TITLE_MAX = 60;   // عدّل الرقم كما تريد
+  const DESC_MAX  = 180;  // عدّل الرقم كما تريد
+
+  // enforce maxLength on inputs
+  if (titleInput) titleInput.maxLength = TITLE_MAX;
+  if (descInput)  descInput.maxLength  = DESC_MAX;
+
+  // (اختياري) منع لصق نص طويل
+  titleInput?.addEventListener("input", () => {
+    if (titleInput.value.length > TITLE_MAX) {
+      titleInput.value = titleInput.value.slice(0, TITLE_MAX);
+    }
+  });
+
+  descInput?.addEventListener("input", () => {
+    if (descInput.value.length > DESC_MAX) {
+      descInput.value = descInput.value.slice(0, DESC_MAX);
+    }
+  });
+/* ===============================
+     end LIMIT INPUT LENGTH
+  =============================== */
   const dueInput = document.getElementById("taskDue");
   const taskTypeSelect = document.getElementById("taskType");
 
@@ -213,6 +238,14 @@ statusBtn?.addEventListener("click", async (e) => {
 
     const title = titleInput?.value.trim();
     if (!title) return alert("اكتب عنوان المهمة");
+    if (title.length > TITLE_MAX) {
+      return alert(`عنوان المهمة يجب ألا يتجاوز ${TITLE_MAX} حرفًا`);
+    }
+
+    const descVal = (descInput?.value || "");
+    if (descVal.length > DESC_MAX) {
+      return alert(`تفاصيل المهمة يجب ألا تتجاوز ${DESC_MAX} حرفًا`);
+    }
 
     await addDoc(collection(db, "users", user.uid, "tasks"), {
       title,
@@ -603,9 +636,9 @@ tasks.sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
         <td>${dateStr}</td>
         <td>${timeStr}</td>
         <td>
-          <strong>${task.title || ""}</strong>
-          ${task.desc ? `<div class="planner-desc">${task.desc}</div>` : ``}
+        <strong class="planner-title">${task.title || ""}</strong>
         </td>
+
         <td>
           <span class="planner-type ${task.type || "personal"}">${typeLabel}</span>
         </td>
