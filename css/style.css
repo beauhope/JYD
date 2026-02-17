@@ -888,52 +888,52 @@ select option:hover {
   background:rgba(255,123,123,.04);
 }
 
-/* Mobile: keep table usable */
+/* Mobile: compact mode (no heavy crowding) */
 @media (max-width:768px){
 
-  /* 1) خليه يأخذ عرض الموبايل بدون إجبار min-width */
+  /* خفّف مساحة الجدول قدر الإمكان */
+  .planner-wrap{
+    border-radius:16px;
+  }
+
   .planner-table{
-    min-width:0;
-    width:100%;
-    table-layout:fixed;   /* يخلي الأعمدة تتوزع */
+    min-width: 560px;         /* أقل من قبل */
+    font-size: 11px;          /* تصغير عام للجدول */
   }
 
-  /* 2) تصغير المسافات والخط */
-  .planner-table thead th,
+  .planner-table thead th{
+    padding: 10px 8px;
+    font-size: 11px;
+  }
+
   .planner-table td{
-    padding:10px 8px;
-    font-size:12px;
+    padding: 10px 8px;        /* تقليل padding للخلايا */
   }
 
-  /* 3) السماح بكسر النص بدل ما يوسّع الجدول */
-  .planner-table th,
-  .planner-table td{
-    white-space:normal;
-    word-break:break-word;
+  /* badges أصغر */
+  .planner-type,
+  .planner-status{
+    padding: 4px 9px;
+    font-size: 10px;
+    min-width: 0;
   }
 
-  /* 4) العنوان (عمود 3) يبقى يمين لكن بخط أصغر */
+  /* العنوان يبقى مقروء */
   .planner-table td:nth-child(3){
-    text-align:right;
-    font-size:12px;
-    line-height:1.35;
+    font-size: 11px;
+    line-height: 1.35;
   }
 
   .planner-desc{
-    font-size:11px;
+    font-size: 10px;
   }
 
-  /* 5) البادجات أصغر */
-  .planner-type,
-  .planner-status{
-    padding:4px 8px;
-    font-size:11px;
-    min-width:64px;
+  /* فهرس الرموز مريح على الموبايل */
+  .planner-legend{
+    padding: 8px 10px;
+    gap: 8px;
   }
-
-  /* 6) لمسة: لا نحتاج تمرير أفقي غالبًا */
-  .planner-wrap{
-    overflow-x:hidden;
+  .planner-legend small{
+    font-size: 11px;
   }
 }
-

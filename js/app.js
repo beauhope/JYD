@@ -524,6 +524,30 @@ tasks.sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
     });
   }
 
+  /* ===============================
+     PLANNER: MOBILE SHORT LABELS
+  =============================== */
+  const isMobilePlanner = window.matchMedia("(max-width: 768px)").matches;
+
+  const shortType = (t) => {
+    if (!isMobilePlanner) return (t === "work" ? "عمل" : "شخصي");
+    return (t === "work" ? "ع" : "ش");
+  };
+
+  const shortStatus = (s) => {
+    // s: "done" | "overdue" | "todo"
+    if (!isMobilePlanner) {
+      if (s === "done") return "منجزة";
+      if (s === "overdue") return "متأخرة";
+      return "مطلوبة";
+    }
+    if (s === "done") return "✓";
+    if (s === "overdue") return "مت";
+    return "م";
+  };
+
+
+
 
     /* ===============================
      RENDER PLANNER (Scheduled Tasks Table)
@@ -566,8 +590,11 @@ tasks.sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
         hour: "2-digit", minute: "2-digit"
       });
 
-      const typeLabel = (task.type === "work") ? "عمل" : "شخصي";
-      const statusLabel = task.done ? "منجزة" : (isOverdue(task) ? "متأخرة" : "مطلوبة");
+      const typeLabel = shortType(task.type);
+
+      const statusKey = task.done ? "done" : (isOverdue(task) ? "overdue" : "todo");
+      const statusLabel = shortStatus(statusKey);
+
 
       const tr = document.createElement("tr");
       tr.className = `planner-row ${task.done ? "is-done" : ""} ${isOverdue(task) ? "is-overdue" : ""}`;
@@ -583,9 +610,10 @@ tasks.sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
           <span class="planner-type ${task.type || "personal"}">${typeLabel}</span>
         </td>
         <td>
-          <span class="planner-status ${task.done ? "done" : (isOverdue(task) ? "overdue" : "todo")}">
-            ${statusLabel}
-          </span>
+          <span class="planner-status ${statusKey}">
+        ${statusLabel}
+        </span>
+
         </td>
       `;
 
