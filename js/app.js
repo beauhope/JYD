@@ -128,6 +128,27 @@ statusBtn?.addEventListener("click", async (e) => {
   document.querySelectorAll(".section-accordion.active .section-content").forEach(c => {
     c.style.maxHeight = c.scrollHeight + "px";
   });
+  /* ===============================
+     SCROLL TO TOP BUTTON
+  =============================== */
+  const scrollTopBtn = document.getElementById("scrollTopBtn");
+
+  function toggleScrollTop() {
+    if (!scrollTopBtn) return;
+    if (window.scrollY > 250) scrollTopBtn.classList.add("show");
+    else scrollTopBtn.classList.remove("show");
+  }
+
+  // show/hide on scroll
+  window.addEventListener("scroll", toggleScrollTop, { passive: true });
+  // initial state
+  toggleScrollTop();
+
+  // click -> scroll to top
+  scrollTopBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
 
   /* ===============================
      AUTH STATE
@@ -418,7 +439,9 @@ statusBtn?.addEventListener("click", async (e) => {
     if (typeValue !== "all") tasks = tasks.filter(t => (t.type || "personal") === typeValue);
 
     const sort = sortSelect?.value || "newest";
-    // === PATCH: ENABLE "oldest" SORT (createdAt ASC) ===
+
+// === PATCH: SORTING (keep done always last) ===
+// 1) طبق فرز الاختيار (بدون الخلط مع done)
 if (sort === "oldest") {
   tasks.sort((a, b) => {
     const da = toDateSafe(a.createdAt)?.getTime() || 0;
@@ -426,19 +449,31 @@ if (sort === "oldest") {
     return da - db;
   });
 }
+
+if (sort === "dueAsc") {
+  tasks.sort((a, b) => new Date(a.due || 0) - new Date(b.due || 0));
+}
+
+if (sort === "dueDesc") {
+  tasks.sort((a, b) => new Date(b.due || 0) - new Date(a.due || 0));
+}
+
+// 2) خطوة ثابتة في النهاية: غير المنجزة أولاً، والمنجزة دائماً آخر القائمة
+tasks.sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
 // === END PATCH ===
 
-    if (sort === "dueAsc") tasks.sort((a, b) => new Date(a.due || 0) - new Date(b.due || 0));
-    if (sort === "dueDesc") tasks.sort((a, b) => new Date(b.due || 0) - new Date(a.due || 0));
 
     taskList.innerHTML = "";
 
     tasks.forEach(task => {
       const li = document.createElement("li");
       li.dataset.id = task.id;
+      // === PATCH: mark done li ===
+  if (task.done) li.classList.add("is-done");
+  // === END PATCH ===
 
       li.innerHTML = `
-        <div class="task-card">
+        <div class="task-card ${task.done ? "is-done" : ""}">
 
           <div class="task-header">
             <h3>
