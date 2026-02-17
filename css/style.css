@@ -968,7 +968,7 @@ select option:hover {
   overflow: visible;
   text-overflow: unset;
 
-  line-height:1.1.25;
+  line-height:1.1;
   word-break: break-word;  /* ✅ يمنع قص الكلمات الطويلة */
 }
 
