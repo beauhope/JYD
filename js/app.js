@@ -328,16 +328,27 @@ plannerBody?.addEventListener("click", (e) => {
   });
 
   deleteDoneBtn?.addEventListener("click", async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const user = auth.currentUser;
-    if (!user) return;
+  const user = auth.currentUser;
+  if (!user) return;
 
-    const doneTasks = allTasks.filter(t => t.done);
-    for (const t of doneTasks) {
-      await deleteDoc(doc(db, "users", user.uid, "tasks", t.id));
-    }
-  });
+  const doneTasks = allTasks.filter(t => t.done);
+
+  if (doneTasks.length === 0) {
+    alert("لا توجد مهام منجزة للحذف.");
+    return;
+  }
+
+  const ok = confirm(
+    `تأكيد الحذف:\nسيتم حذف ${doneTasks.length} مهمة منجزة نهائيًا.\n\nاضغط "موافق" لتأكيد الحذف.`
+  );
+  if (!ok) return;
+
+  for (const t of doneTasks) {
+    await deleteDoc(doc(db, "users", user.uid, "tasks", t.id));
+  }
+});
 
   /* ===============================
      ADD IDEA
@@ -399,9 +410,16 @@ plannerBody?.addEventListener("click", (e) => {
     }
 
     if (btn.classList.contains("delete-btn")) {
-      await deleteDoc(doc(db, "users", user.uid, "tasks", taskId));
-      return;
-    }
+
+  const task = allTasks.find(t => t.id === taskId);
+  const title = task?.title ? task.title : "هذه المهمة";
+
+  const ok = confirm(`تأكيد الحذف:\nسيتم حذف المهمة التالية نهائيًا:\n\n"${title}"\n\nاضغط "موافق" لتأكيد الحذف.`);
+  if (!ok) return;
+
+  await deleteDoc(doc(db, "users", user.uid, "tasks", taskId));
+  return;
+}
 
     if (btn.classList.contains("edit-btn")) {
       const task = allTasks.find(t => t.id === taskId);
@@ -443,9 +461,15 @@ plannerBody?.addEventListener("click", (e) => {
     if (!idea) return;
 
     if (btn.classList.contains("idea-delete")) {
-      await deleteDoc(doc(db, "users", user.uid, "ideas", ideaId));
-      return;
-    }
+
+  const title = idea?.title ? idea.title : "هذه الفكرة";
+
+  const ok = confirm(`تأكيد الحذف:\nسيتم حذف الفكرة التالية نهائيًا:\n\n"${title}"\n\nاضغط "موافق" لتأكيد الحذف.`);
+  if (!ok) return;
+
+  await deleteDoc(doc(db, "users", user.uid, "ideas", ideaId));
+  return;
+}
 
     if (btn.classList.contains("idea-to-task")) {
       await addDoc(collection(db, "users", user.uid, "tasks"), {
@@ -649,13 +673,33 @@ tasks.sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
 
     // فقط المهام التي لها due
     const scheduled = allTasks
-      .filter(t => !!t.due)
-      .map(t => ({
-        ...t,
-        _dueDate: toDateSafe(t.due)
-      }))
-      .filter(t => t._dueDate) // تأكيد التحويل
-      .sort((a, b) => a._dueDate - b._dueDate);
+  .filter(t => !!t.due)
+  .map(t => ({
+    ...t,
+    _dueDate: toDateSafe(t.due)
+  }))
+  .filter(t => t._dueDate)
+  .sort((a, b) => {
+    const rank = (t) => {
+      if (t.done) return 2;          // done last
+      if (isOverdue(t)) return 0;    // overdue first
+      return 1;                      // todo middle
+    };
+
+    const ra = rank(a);
+    const rb = rank(b);
+
+    if (ra !== rb) return ra - rb;
+
+    // داخل نفس المجموعة:
+    if (ra === 2) {
+      // done: الأحدث أولاً
+      return b._dueDate - a._dueDate;
+    }
+
+    // overdue + todo: الأقدم أولاً
+    return a._dueDate - b._dueDate;
+  });
 
     plannerCount.textContent = String(scheduled.length);
     plannerBody.innerHTML = "";
