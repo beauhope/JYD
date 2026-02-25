@@ -12,14 +12,20 @@ import {
   orderBy,
   updateDoc,
   deleteDoc,
-  doc
+  doc,
+  enableIndexedDbPersistence
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
 import { onAuthStateChanged }
 from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-
+ /* ===============================
+     offline
+  =============================== */
+  enableIndexedDbPersistence(db).catch((err) => {
+  console.warn("Firestore offline persistence:", err.code);
+});
   /* ===============================
      AUTH BUTTONS
   =============================== */
