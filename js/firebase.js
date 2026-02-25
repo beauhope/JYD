@@ -17,9 +17,10 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Offline (IndexedDB)
+// ✅ Offline persistence: مرة واحدة فقط هنا
 enableIndexedDbPersistence(db).catch((err) => {
-  console.log("Offline error:", err.code);
+  // هذه الأخطاء لا يجب أن توقف التطبيق
+  console.warn("Offline persistence not enabled:", err.code);
 });
 
 export { auth, db };
