@@ -5,26 +5,30 @@
    - Update flow ready
 ================================ */
 
-const VERSION = "mytodo-v2";
+const VERSION = "mytodo-v3";                // غيّر النسخة عند كل تحديث
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
 const ASSETS = [
   "./",
   "./index.html",
-  "./style.css",
   "./manifest.webmanifest",
+
+  // ✅ حسب شجرة مشروعك
+  "./css/style.css",
+
   "./js/app.js",
   "./js/auth.js",
   "./js/firebase.js",
+
   "./icons/icon-192.png",
   "./icons/icon-512.png",
-  "./icons/mysvglogo.png",
+  "./icons/msvsylogo.png",
 
-  // إذا عندك خط Cairo محلي (مثلاً woff2 داخل fonts)
-  // عدّل الاسم حسب الملف الحقيقي عندك:
-  "./fonts/Cairo-Regular.woff2",
-  "./fonts/Cairo-Bold.woff2"
+  // ✅ خطوطك حسب الشجرة (TTF)
+  "./fonts/Cairo-Regular.ttf",
+  "./fonts/Cairo-Bold.ttf",
+  "./fonts/Roboto-VariableFont_slnt,wght.woff2"
 ];
 
 /* -------------------------------
@@ -34,17 +38,14 @@ self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(STATIC_CACHE);
 
-    // addAll أحياناً يفشل إذا ملف واحد 404
-    // لذا نخليها safe: نضيف كل ملف لوحده
+    // إضافة آمنة: لا تفشل التثبيت لو ملف واحد 404
     await Promise.all(
       ASSETS.map(async (url) => {
         try {
           const req = new Request(url, { cache: "reload" });
           const res = await fetch(req);
-          if (res.ok) await cache.put(req, res);
-        } catch (e) {
-          // نتجاهل أي ملف فشل (أفضل من كسر التثبيت كامل)
-        }
+          if (res.ok) await cache.put(url, res.clone());
+        } catch (e) {}
       })
     );
 
@@ -52,38 +53,15 @@ self.addEventListener("install", (event) => {
   })());
 });
 
-
 /* -------------------------------
-   Activate: take control + clean old caches
--------------------------------- */
-self.addEventListener("activate", (event) => {
-  event.waitUntil((async () => {
-    // امسك كل الصفحات فورًا (مهم للموبايل/PWA)
-    await self.clients.claim();
-
-    // احذف أي كاش قديم (اختياري لكنه يحل 0/10 بنسبة كبيرة)
-    const keys = await caches.keys();
-    await Promise.all(
-      keys.map((k) => {
-        // احذف أي كاش غير الكاش الحالي
-        if (k !== STATIC_CACHE) return caches.delete(k);
-      })
-    );
-  })());
-});
-
-/* -------------------------------
-   Activate: clean old caches
+   Activate: clean old caches + take control
 -------------------------------- */
 self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
     await Promise.all(
-      keys
-        .filter((k) => !k.startsWith(VERSION))
-        .map((k) => caches.delete(k))
+      keys.filter((k) => !k.startsWith(VERSION)).map((k) => caches.delete(k))
     );
-
     await self.clients.claim();
   })());
 });
@@ -100,28 +78,24 @@ self.addEventListener("message", (event) => {
 -------------------------------- */
 self.addEventListener("fetch", (event) => {
   const req = event.request;
-
-  // Only handle GET
   if (req.method !== "GET") return;
 
   const url = new URL(req.url);
-
-  // نفس الأصل فقط
   const sameOrigin = url.origin === self.location.origin;
 
-  // Navigation (HTML صفحات)
+  // Navigation: Network first with offline fallback
   if (req.mode === "navigate") {
     event.respondWith(networkFirst(req));
     return;
   }
 
-  // Files: css/js => stale-while-revalidate
+  // CSS/JS: Stale-While-Revalidate
   if (sameOrigin && (url.pathname.endsWith(".css") || url.pathname.endsWith(".js"))) {
     event.respondWith(staleWhileRevalidate(req));
     return;
   }
 
-  // Fonts / Icons / Images => cache-first
+  // Fonts / Icons / Images: Cache-first
   if (
     sameOrigin &&
     (url.pathname.includes("/fonts/") ||
@@ -132,7 +106,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Default: try cache then network
+  // Default
   event.respondWith(cacheFirst(req));
 });
 

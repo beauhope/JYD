@@ -45,13 +45,11 @@
 <link rel="stylesheet" href="css/style.css?v=20260218_2">
 </head>
 <script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./service-worker.js", { scope: "./" })
-        .then((reg) => console.log("SW registered:", reg.scope))
-        .catch((err) => console.error("SW register failed:", err));
-    });
-  }
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js", { scope: "./" });
+  });
+}
 </script>
 <body>
 <!-- 🔐 LOGIN -->
