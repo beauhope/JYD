@@ -82,9 +82,13 @@ if ("serviceWorker" in navigator) {
 <div id="app" class="app hidden">
 
     <!-- HEADER -->
-<div class="app-header">
+<div class="app-header mini-home">
 
-  <div class="header-center">
+  <a class="mini-logo home-logo" href="index.html" title="MyTodo" aria-label="MyTodo">
+    <span class="mini-logo-icon">MT</span>
+  </a>
+
+    <div class="header-center">
 
     <!-- TITLE -->
     <h1 class="main-title">لوحة إدارة مهامي</h1>
@@ -363,6 +367,9 @@ if ("serviceWorker" in navigator) {
 <!-- ===============================
      SECTION 4 — عرض الأفكار
 ================================ -->
+<!-- ===============================
+     SECTION 4 — عرض الأفكار
+================================ -->
 <div class="section-accordion">
 
   <div class="section-header">
@@ -371,20 +378,27 @@ if ("serviceWorker" in navigator) {
       <path fill="currentColor" d="M7 10l5 5 5-5z"/>
     </svg>
   </div>
-
-  <div class="section-content">
-
-    <select id="ideaTypeFilter" style="margin-bottom:12px;">
-  <option value="all">الكل</option>
-  <option value="personal">شخصي</option>
-  <option value="work">عمل</option>
-</select>
-
-    <ul id="ideaList" class="list"></ul>
-  </div>
 </div>
+  <!-- QUICK LINKS (Morocco) — ALWAYS VISIBLE -->
+  
+<!-- QUICK LINKS (Morocco) — ALWAYS VISIBLE -->
+<div class="quick-links-row">
+  <button type="button" class="btn-primary small"
+          onclick="window.open('morocco/numeros.html','_blank','noopener')">
+    أرقام هواتف مغربية مهمة
+  </button>
 
+  <button type="button" class="btn-gold small"
+          onclick="window.open('morocco/sites.html','_blank','noopener')">
+   مواقع مغربية مهمة
+  </button>
 
+  <button type="button" class="btn-primary small"
+          onclick="alert('سنضيف الرابط لاحقًا');">
+    ➕ رابط ثالث
+  </button>
+</div>
+</div>
 <script type="module" src="js/app.js?v=20260218_2"></script>
 
 

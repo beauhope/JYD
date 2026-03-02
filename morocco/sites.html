@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>مواقع مغربية مهمة</title>
+
+  <!-- FAVICON — MyTodo -->
+  <link rel="icon" type="image/svg+xml"
+    href='data:image/svg+xml,
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="%230b1020"/>
+          <stop offset="1" stop-color="%234f7cff"/>
+        </linearGradient>
+      </defs>
+      <rect width="64" height="64" rx="14" fill="url(%23g)"/>
+      <rect x="4" y="4" width="56" height="56" rx="12"
+            fill="none" stroke="%23fbbf24" stroke-width="2"/>
+      <text x="50%" y="52%" text-anchor="middle"
+            font-family="Arial, sans-serif"
+            font-size="22"
+            font-weight="800"
+            fill="%23eef2ff">MT</text>
+      <text x="50%" y="78%" text-anchor="middle"
+            font-family="Arial, sans-serif"
+            font-size="10"
+            font-weight="700"
+            fill="%23fbbf24">TODO</text>
+    </svg>'>
+
+  <link rel="manifest" href="../manifest.webmanifest">
+  <meta name="theme-color" content="#0a1124">
+
+  <link rel="stylesheet" href="../css/style.css?v=20260218_2">
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("../sw.js", { scope: "../" });
+      });
+    }
+  </script>
+</head>
+
+<body>
+  <!-- هنا سنحقن القالب -->
+  <div id="shellMount"></div>
+
+  <script>
+    // 1) حقن القالب داخل body بدون لمس head
+    async function mountShell(){
+      const res = await fetch("../templates/page-shell.html", { cache: "no-store" });
+      const shell = await res.text();
+      document.getElementById("shellMount").innerHTML = shell;
+    }
+
+    // 2) بعد الحقن: ضع العنوان + المحتوى + نفس سكربت الصفحة
+    async function initPage(){
+      await mountShell();
+
+      const content = document.getElementById("pageContent");
+      const title = document.getElementById("pageTitle");
+      const subtitle = document.getElementById("pageSubtitle");
+
+      if(title) title.textContent = "🌐 مواقع رسمية مغربية مهمة";
+      if(subtitle) subtitle.textContent = "مواقع مغربية مهمة";
+
+      // نفس محتواك (بدون تغيير)
+      content.innerHTML = `
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px;">
+          <button type="button" class="btn-gold small" id="copyAllLinksBtn">📋 نسخ جميع الروابط</button>
+        </div>
+
+        <div class="field" style="margin-bottom:12px;">
+          <label>بحث سريع</label>
+          <input id="searchInput" placeholder="اكتب كلمة مثل: watiqa, chikaya, passport, cnss...">
+        </div>
+
+        <ul id="sitesList" class="list"></ul>
+
+        <div style="margin-top:14px; color:var(--muted); font-size:13px;">
+          ملاحظة: هذه قائمة مرجعية لتسهيل الوصول للخدمات الرسمية. إذا تغيّر رابط رسمي، أخبرني لأحدّثه.
+        </div>
+      `;
+
+      // البيانات كما هي
+      const SITES = [
+        { label: "🪪 الحالة المدنية", url: "https://www.alhalalmadania.ma/Pages/Accueil.aspx" },
+        { label: "💳 البطاقة الوطنية الإلكترونية", url: "http://www.cnie.ma/Pages/Accueil.aspx" },
+        { label: "⚖️ السجل العدلي", url: "https://casierjudiciaire.justice.gov.ma" },
+        { label: "🛂 جواز السفر", url: "https://www.passeport.ma/ar" },
+        { label: "🏢 السجل التجاري", url: "http://www.erc.ma/3.html" },
+        { label: "🏥 نظام المساعدة الطبية (راميد)", url: "https://www.ramed.ma/ar/Commun/index.aspx" },
+        { label: "🗳️ الانتخابات", url: "http://www.elections.ma" },
+        { label: "📑 الصفقات العمومية", url: "https://www.marchespublics.gov.ma/pmmp/?lang=ar" },
+        { label: "📮 الشكايات", url: "https://www.chikaya.ma" },
+        { label: "👨‍⚖️ المساطر القضائية", url: "http://www.justice.gov.ma/lg-1/procedures/proc-1.aspx" },
+        { label: "📄 الشباك الإلكتروني للوثائق الإدارية", url: "https://www.watiqa.ma" },
+        { label: "🏛️ تتبع ملفات المحاكم", url: "http://www.mahakim.ma/?Page=Acceuil" },
+        { label: "🎓 مسار (التعليم)", url: "https://massar.men.gov.ma/Account" },
+        { label: "🏫 وزارة التربية الوطنية – دليل المؤسسات", url: "https://www.men.gov.ma/Ar/Pages/annuaire.aspx" },
+        { label: "🤝 مؤسسة محمد السادس للتربية والتكوين", url: "https://services.fm6education.ma/connexion" },
+        { label: "📚 المكتبة الوسائطية لمؤسسة محمد السادس", url: "http://mediatheque.mtds.com/arb" },
+        { label: "🔄 الحركة الانتقالية", url: "http://haraka.men.gov.ma/haraka/" },
+        { label: "💊 كنوبس (CNOPS)", url: "http://www.cnops.org.ma/assure_app?lang=fr_FR&dir=login" },
+        { label: "👴 الصندوق المغربي للتقاعد", url: "https://www.cmr.gov.ma" },
+        { label: "👷 الصندوق الوطني للضمان الاجتماعي (CNSS)", url: "https://www.cnss.ma" },
+        { label: "🧾 الخدمات العمومية", url: "http://www.service-public.ma/ar/web/guest/home" },
+        { label: "🩺 تتبع الملفات الطبية", url: "https://ittissal.sahamassurance.ma" },
+        { label: "👔 الموارد البشرية (NOTIFRH)", url: "https://notifrh.men.gov.ma/NOTIFRH/" },
+        { label: "💰 الخزينة العامة", url: "https://www.tgr.gov.ma/wps/portal" },
+        { label: "🧮 وزارة إصلاح الإدارة والوظيفة العمومية", url: "http://www.mmsp.gov.ma" },
+        { label: "🇲🇦 البوابة الرسمية للمغرب", url: "http://www.maroc.ma" },
+        { label: "📍 إدارتي ماب (دليل الإدارات)", url: "http://www.mmsp.gov.ma/fr/decline.aspx?m=6&r=338" },
+        { label: "📂 الخدمات العمومية – الوثائق والمساطر", url: "http://www.service-public.ma" },
+        { label: "🚫 التبليغ عن التغيب غير المشروع", url: "http://www.stopabsence.ma/ar/denoncer.asp" },
+        { label: "🏛️📖 المكتبة الوطنية للمملكة المغربية", url: "https://www.bnrm.ma" }
+      ];
+
+      const listEl = document.getElementById("sitesList");
+      const searchEl = document.getElementById("searchInput");
+      const copyAllBtn = document.getElementById("copyAllLinksBtn");
+
+      function escapeHtml(s){
+        return String(s).replace(/[&<>"']/g, m => ({
+          "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+        }[m]));
+      }
+
+      function render(items){
+        listEl.innerHTML = "";
+        if(!items.length){
+          listEl.innerHTML = `<li class="card" style="padding:12px;">لا توجد نتائج مطابقة.</li>`;
+          return;
+        }
+
+        for(const item of items){
+          const li = document.createElement("li");
+          li.className = "card";
+          li.style.padding = "12px";
+          li.style.marginBottom = "10px";
+
+          li.innerHTML = `
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+              <div style="flex:1; min-width:240px;">
+                <div style="font-weight:700; margin-bottom:4px;">${escapeHtml(item.label)}</div>
+                <div style="color:var(--muted); direction:ltr; text-align:left; overflow-wrap:anywhere;">
+                  ${escapeHtml(item.url)}
+                </div>
+              </div>
+
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button type="button" class="btn-primary small"
+                        onclick="window.open('${escapeHtml(item.url)}','_blank','noopener')">
+                  فتح
+                </button>
+                <button type="button" class="btn-gold small" data-copy="${escapeHtml(item.label)}: ${escapeHtml(item.url)}">
+                  نسخ
+                </button>
+              </div>
+            </div>
+          `;
+
+          listEl.appendChild(li);
+        }
+      }
+
+      function filter(){
+        const q = (searchEl.value || "").trim().toLowerCase();
+        if(!q) return render(SITES);
+        const filtered = SITES.filter(x =>
+          (x.label + " " + x.url).toLowerCase().includes(q)
+        );
+        render(filtered);
+      }
+
+      document.addEventListener("click", async (e) => {
+        const btn = e.target.closest("button[data-copy]");
+        if(!btn) return;
+        const text = btn.getAttribute("data-copy");
+        try{
+          await navigator.clipboard.writeText(text);
+          btn.textContent = "✅ تم";
+          setTimeout(() => btn.textContent = "نسخ", 900);
+        }catch{
+          alert("تعذر النسخ. جرّب النسخ اليدوي.");
+        }
+      });
+
+      copyAllBtn.addEventListener("click", async () => {
+        const all = SITES.map(x => `${x.label}: ${x.url}`).join("\n");
+        try{
+          await navigator.clipboard.writeText(all);
+          copyAllBtn.textContent = "✅ تم النسخ";
+          setTimeout(() => copyAllBtn.textContent = "📋 نسخ جميع الروابط", 1200);
+        }catch{
+          alert("تعذر النسخ. جرّب النسخ اليدوي.");
+        }
+      });
+
+      searchEl.addEventListener("input", filter);
+
+      render(SITES);
+    }
+
+    initPage();
+  </script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>الأرقام المهمة بالمغرب</title>
+
+  <!-- FAVICON — MyTodo -->
+  <link rel="icon" type="image/svg+xml"
+    href='data:image/svg+xml,
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="%230b1020"/>
+          <stop offset="1" stop-color="%234f7cff"/>
+        </linearGradient>
+      </defs>
+      <rect width="64" height="64" rx="14" fill="url(%23g)"/>
+      <rect x="4" y="4" width="56" height="56" rx="12"
+            fill="none" stroke="%23fbbf24" stroke-width="2"/>
+      <text x="50%" y="52%" text-anchor="middle"
+            font-family="Arial, sans-serif"
+            font-size="22"
+            font-weight="800"
+            fill="%23eef2ff">MT</text>
+      <text x="50%" y="78%" text-anchor="middle"
+            font-family="Arial, sans-serif"
+            font-size="10"
+            font-weight="700"
+            fill="%23fbbf24">TODO</text>
+    </svg>'>
+
+  <link rel="manifest" href="../manifest.webmanifest">
+  <meta name="theme-color" content="#0a1124">
+
+  <link rel="stylesheet" href="../css/style.css?v=20260218_2">
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("../sw.js", { scope: "../" });
+      });
+    }
+  </script>
+</head>
+
+<body>
+  <!-- هنا سنحقن القالب -->
+  <div id="shellMount"></div>
+
+  <script>
+    // 1) حقن القالب داخل body بدون لمس head
+    async function mountShell(){
+      const res = await fetch("../templates/page-shell.html", { cache: "no-store" });
+      const shell = await res.text();
+      document.getElementById("shellMount").innerHTML = shell;
+    }
+
+    // 2) بعد الحقن: ضع العنوان + المحتوى + نفس سكربت الصفحة
+    async function initPage(){
+      await mountShell();
+
+      const content = document.getElementById("pageContent");
+      const title = document.getElementById("pageTitle");
+      const subtitle = document.getElementById("pageSubtitle");
+
+      if(title) title.textContent = "🇲🇦 الأرقام المهمة بالمغرب";
+      if(subtitle) subtitle.textContent = "أرقام هواتف مغربية مهمة";
+
+      // نفس محتواك (بدون تغيير)
+      content.innerHTML = `
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px;">
+          <button class="btn-gold small" type="button" id="copyAllBtn">📋 نسخ الكل</button>
+        </div>
+
+        <div class="field" style="margin-bottom:12px;">
+          <label>بحث سريع</label>
+          <input id="searchInput" placeholder="اكتب كلمة مثل: Police, ONCF, Taxi...">
+        </div>
+
+        <ul id="numbersList" class="list"></ul>
+
+        <div style="margin-top:14px; color:var(--muted); font-size:13px;">
+          ملاحظة: بعض أرقام الطوارئ قد تختلف حسب المدينة أو المشغل. احتفِظ بهذه القائمة كمرجع سريع.
+        </div>
+      `;
+
+      // البيانات (كما زودتني)
+      const NUMBERS = [
+        { label: "TGV 🚄", value: "0537680065" },
+        { label: "Tramway 🚊", value: "0537863232" },
+        { label: "Taxis 🚖 Rabat Maroc", value: "0661590432" },
+        { label: "CTM 🚍", value: "0537795124" },
+        { label: "ONCF 🚞", value: "0522736060" },
+        { label: "Office national des Aéroports 🛬", value: "0522539040 / 0522539140 / 0522435858" },
+        { label: "Maroc Assistance", value: "0522303030" },
+        { label: "Mondial Assistance", value: "0522313150" },
+        { label: "SOS Médecins 🥼", value: "0522989898" },
+        { label: "Centre Antipoison ☠", value: "0537686464" },
+        { label: "Anti-Corruption", value: "0800107676" },
+        { label: "Fil santé jeunes", value: "0800235236" },
+        { label: "Hépatite Info Service", value: "0800845800" },
+        { label: "Police 👮‍♀", value: "190" },
+        { label: "Gendarmerie Royale 👨🏻‍✈️", value: "150" },
+        { label: "Ambulance 🚑", value: "177" },
+        { label: "SOS discrimination raciale", value: "114" },
+        { label: "Renseignements", value: "160" },
+        { label: "Internationaux", value: "120" },
+        { label: "Dérangements", value: "110" },
+        { label: "Réclamations", value: "130" }
+      ];
+
+      const listEl = document.getElementById("numbersList");
+      const searchEl = document.getElementById("searchInput");
+      const copyAllBtn = document.getElementById("copyAllBtn");
+
+      function escapeHtml(s){
+        return String(s).replace(/[&<>"']/g, m => ({
+          "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+        }[m]));
+      }
+
+      function render(items){
+        listEl.innerHTML = "";
+        if(!items.length){
+          listEl.innerHTML = `<li class="card" style="padding:12px;">لا توجد نتائج مطابقة.</li>`;
+          return;
+        }
+
+        for(const item of items){
+          const li = document.createElement("li");
+          li.className = "card";
+          li.style.padding = "12px";
+          li.style.marginBottom = "10px";
+
+          const firstDial = (item.value || "").split(" / ")[0].trim();
+
+          li.innerHTML = `
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+              <div>
+                <div style="font-weight:700; margin-bottom:4px;">${escapeHtml(item.label)}</div>
+                <div style="color:var(--muted); direction:ltr; text-align:right;">${escapeHtml(item.value)}</div>
+              </div>
+
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <a class="btn-primary small" href="tel:${escapeHtml(firstDial)}">اتصال</a>
+                <button class="btn-gold small" type="button" data-copy="${escapeHtml(item.label)}: ${escapeHtml(item.value)}">نسخ</button>
+              </div>
+            </div>
+          `;
+
+          listEl.appendChild(li);
+        }
+      }
+
+      function filter(){
+        const q = (searchEl.value || "").trim().toLowerCase();
+        if(!q) return render(NUMBERS);
+        const filtered = NUMBERS.filter(x =>
+          (x.label + " " + x.value).toLowerCase().includes(q)
+        );
+        render(filtered);
+      }
+
+      // نسخ عنصر واحد
+      document.addEventListener("click", async (e) => {
+        const btn = e.target.closest("button[data-copy]");
+        if(!btn) return;
+        const text = btn.getAttribute("data-copy");
+        try{
+          await navigator.clipboard.writeText(text);
+          btn.textContent = "✅ تم";
+          setTimeout(() => btn.textContent = "نسخ", 900);
+        }catch{
+          alert("تعذر النسخ. جرّب النسخ اليدوي.");
+        }
+      });
+
+      // نسخ الكل
+      copyAllBtn.addEventListener("click", async () => {
+        const all = NUMBERS.map(x => `${x.label}: ${x.value}`).join("\n");
+        try{
+          await navigator.clipboard.writeText(all);
+          copyAllBtn.textContent = "✅ تم النسخ";
+          setTimeout(() => copyAllBtn.textContent = "📋 نسخ الكل", 1200);
+        }catch{
+          alert("تعذر النسخ. جرّب النسخ اليدوي.");
+        }
+      });
+
+      searchEl.addEventListener("input", filter);
+
+      render(NUMBERS);
+    }
+
+    initPage();
+  </script>
+
+</body>
+</html>
