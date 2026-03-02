@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>قوالب جاهزة</title>
+
+  <!-- FAVICON — MyTodo -->
+  <link rel="icon" type="image/svg+xml"
+    href='data:image/svg+xml,
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="%230b1020"/>
+          <stop offset="1" stop-color="%234f7cff"/>
+        </linearGradient>
+      </defs>
+      <rect width="64" height="64" rx="14" fill="url(%23g)"/>
+      <rect x="4" y="4" width="56" height="56" rx="12"
+            fill="none" stroke="%23fbbf24" stroke-width="2"/>
+      <text x="50%" y="52%" text-anchor="middle"
+            font-family="Arial, sans-serif"
+            font-size="22"
+            font-weight="800"
+            fill="%23eef2ff">MT</text>
+      <text x="50%" y="78%" text-anchor="middle"
+            font-family="Arial, sans-serif"
+            font-size="10"
+            font-weight="700"
+            fill="%23fbbf24">TODO</text>
+    </svg>'>
+
+  <link rel="manifest" href="../manifest.webmanifest">
+  <meta name="theme-color" content="#0a1124">
+  <link rel="stylesheet" href="../css/style.css?v=20260218_2">
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("../sw.js", { scope: "../" });
+      });
+    }
+  </script>
+</head>
+
+<body>
+  <div id="shellMount"></div>
+
+  <script>
+    async function mountShell(){
+      const res = await fetch("../templates/page-shell.html", { cache: "no-store" });
+      const shell = await res.text();
+      document.getElementById("shellMount").innerHTML = shell;
+    }
+
+    async function initPage(){
+      await mountShell();
+
+      const content = document.getElementById("pageContent");
+      const title = document.getElementById("pageTitle");
+      const subtitle = document.getElementById("pageSubtitle");
+
+      if(title) title.textContent = "📄 قوالب جاهزة للعمل";
+      if(subtitle) subtitle.textContent = "رسائل جاهزة للنسخ";
+
+      content.innerHTML = `
+        <div class="tabs-row" style="margin-bottom:12px;">
+          <button type="button" class="tab-btn active" data-tab="all">الكل</button>
+          <button type="button" class="tab-btn" data-tab="favs">⭐ المفضلة</button>
+          <button type="button" class="tab-btn" data-tab="custom">📌 نسخي</button>
+          <button type="button" class="tab-btn" data-tab="sales">مبيعات</button>
+          <button type="button" class="tab-btn" data-tab="finance">مالية</button>
+          <button type="button" class="tab-btn" data-tab="meetings">اجتماعات</button>
+          <button type="button" class="tab-btn" data-tab="cs">خدمة عملاء</button>
+          <button type="button" class="tab-btn" data-tab="general">عام</button>
+        </div>
+
+        <div class="field" style="margin-bottom:12px;">
+          <label>بحث سريع</label>
+          <input id="searchInput" placeholder="اكتب: عرض سعر، تذكير دفع، اجتماع...">
+        </div>
+
+        <ul id="tplList" class="list"></ul>
+
+        <div style="margin-top:14px; color:var(--muted); font-size:13px;">
+          نصيحة: استبدل ما بين الأقواس مثل (اسم العميل) ثم اضغط “نسخ”.
+        </div>
+      `;
+
+      const TEMPLATES = [
+        // ======================
+        // SALES
+        // ======================
+        {
+          id: "pitch_service",
+          title: "عرض خدمة مختصر (Pitch 4 أسطر)",
+          category: "sales",
+          tags: ["مبيعات","Pitch","عرض","خدمة","تعريف","مختصر","proposal","value","عميل"],
+          text:
+`مرحبًا (اسم العميل)،
+نحن نساعدكم في (وصف مختصر) عبر (منهج/أداة) لتحقيق (نتيجة قابلة للقياس).
+المدة: (مدة) — التسليم: (مخرج/مخرجات).
+هل يناسبكم اتصال 10 دقائق اليوم/غدًا؟`
+        },
+        {
+          id: "quote_request",
+          title: "طلب عرض سعر",
+          category: "sales",
+          tags: ["مبيعات","عرض سعر","quotation","devis","pricing","service","عميل","طلب","عرض"],
+          text:
+`مرحبًا (اسم العميل)،
+نشكركم على التواصل. فضلاً شاركونا التفاصيل التالية لإعداد عرض سعر دقيق:
+1) وصف الخدمة/المنتج
+2) الكمية/النطاق
+3) الموعد المتوقع للتسليم
+4) المدينة/الموقع
+وسنرسل العرض خلال (مدة).`
+        },
+        {
+          id: "followup_quote",
+          title: "متابعة عميل (بعد إرسال عرض)",
+          category: "sales",
+          tags: ["مبيعات","متابعة","follow up","relance","عرض سعر","quotation","عميل","قرار","موافقة"],
+          text:
+`مرحبًا (اسم العميل)،
+أحببت المتابعة بخصوص عرض السعر المرسل بتاريخ (تاريخ).
+هل لديكم أي ملاحظات أو نقاط تحتاج توضيح؟
+يسعدني ترتيب مكالمة قصيرة اليوم/غدًا.`
+        },
+
+        // ======================
+        // MEETINGS
+        // ======================
+        {
+          id: "meeting_confirm",
+          title: "تأكيد موعد اجتماع",
+          category: "meetings",
+          tags: ["اجتماعات","اجتماع","meeting","rendez-vous","تأكيد","موعد","تنسيق","رابط","مكان"],
+          text:
+`تم تأكيد اجتماعنا يوم (اليوم) الموافق (التاريخ) الساعة (الوقت).
+الموضوع: (عنوان)
+الرابط/المكان: (…)
+بانتظاركم.`
+        },
+        {
+          id: "meeting_summary",
+          title: "ملخص اجتماع (مختصر)",
+          category: "meetings",
+          tags: ["اجتماعات","ملخص","minutes","compte rendu","محضر","مهام","متابعة","إجراءات"],
+          text:
+`ملخص اجتماع (التاريخ):
+- الهدف: (…)
+- ما تم الاتفاق عليه: (…)
+- المهام:
+1) (اسم) — (مهمة) — (تاريخ)
+2) (اسم) — (مهمة) — (تاريخ)
+الشكر لكم، وأي تعديل مرحب به.`
+        },
+        {
+          id: "timeline_short",
+          title: "إرسال جدول زمني مختصر",
+          category: "meetings",
+          tags: ["اجتماعات","جدول زمني","timeline","خطة","مراحل","تسليم","موعد","مشروع"],
+          text:
+`مرحبًا (اسم العميل)،
+كما اتفقنا، هذا جدول زمني مختصر:
+- المرحلة 1: (وصف) — (تاريخ)
+- المرحلة 2: (وصف) — (تاريخ)
+- التسليم النهائي: (تاريخ)
+سنشارككم تحديثًا أسبوعيًا كل (اليوم).`
+        },
+        {
+          id: "training_reminder",
+          title: "تذكير موعد تدريب + رابط + متطلبات",
+          category: "meetings",
+          tags: ["تدريب","training","موعد","تذكير","رابط","متطلبات","zoom","teams","قائمة حضور"],
+          text:
+`تذكير لطيف 🌟
+موعد التدريب: (اليوم) (التاريخ) الساعة (الوقت).
+الرابط: (الرابط)
+المتطلبات قبل الحضور:
+1) (متطلب 1)
+2) (متطلب 2)
+يرجى الدخول قبل 5 دقائق.`
+        },
+
+        // ======================
+        // FINANCE
+        // ======================
+        {
+          id: "advance_payment",
+          title: "طلب دفعة مقدمة",
+          category: "finance",
+          tags: ["مالية","دفعة مقدمة","advance","deposit","فاتورة","invoice","بدء العمل","تحصيل","سداد"],
+          text:
+`مرحبًا (اسم العميل)،
+لبدء تنفيذ (الخدمة/المشروع) نرجو التكرم بسداد الدفعة المقدمة بنسبة (٪) / بقيمة (المبلغ).
+بعد الاستلام نبدأ مباشرة ونشارككم خطة التنفيذ خلال (مدة).
+شكرًا لتعاونكم.`
+        },
+        {
+          id: "payment_reminder",
+          title: "تذكير دفع (فاتورة/مستحقات)",
+          category: "finance",
+          tags: ["مالية","تذكير","دفع","invoice","facture","فاتورة","تحصيل","مستحقات","سداد"],
+          text:
+`مرحبًا (اسم العميل)،
+تذكير لطيف بخصوص الفاتورة رقم (رقم) بقيمة (المبلغ) وتاريخ استحقاق (التاريخ).
+نرجو إفادتنا بموعد السداد، أو إن كانت هناك أي ملاحظة. وشكرًا لكم.`
+        },
+        {
+          id: "payment_received",
+          title: "تأكيد استلام دفعة",
+          category: "finance",
+          tags: ["مالية","استلام","دفعة","payment","reçu","تحصيل","إيصال","سداد"],
+          text:
+`مرحبًا (اسم العميل)،
+تم استلام الدفعة بقيمة (المبلغ) بتاريخ (التاريخ).
+شكرًا لكم، وسنواصل تنفيذ/استكمال (الخدمة/المرحلة) حسب الخطة المتفق عليها.
+تحياتي.`
+        },
+
+        // ======================
+        // CUSTOMER SERVICE
+        // ======================
+        {
+          id: "thanks_review",
+          title: "رسالة شكر + طلب تقييم",
+          category: "cs",
+          tags: ["خدمة عملاء","شكر","تقييم","feedback","avis","رضا","تحسين","عميل"],
+          text:
+`شكرًا (اسم العميل) على ثقتكم.
+يسعدنا تقييمكم للخدمة/التجربة في سطرين، أو أي ملاحظة لتحسين العمل مستقبلًا.
+نتشرف بخدمتكم دائمًا.`
+        },
+        {
+          id: "apology_solution",
+          title: "اعتذار مهني + حل بديل",
+          category: "cs",
+          tags: ["خدمة عملاء","اعتذار","apology","حل","بديل","تأخير","تصحيح","متابعة"],
+          text:
+`مرحبًا (اسم العميل)،
+نعتذر عن (المشكلة/التأخير) الذي حصل.
+لتدارك الموضوع نقترح: (حل 1) أو (حل 2)، ونلتزم بتحديثكم قبل (وقت/تاريخ).
+شكرًا لتفهمكم.`
+        },
+        {
+          id: "third_party_delay",
+          title: "تنبيه تأخير بسبب طرف ثالث",
+          category: "cs",
+          tags: ["خدمة عملاء","تأخير","طرف ثالث","supplier","vendor","تصعيد","تحديث","موعد جديد"],
+          text:
+`مرحبًا (اسم العميل)،
+نود إشعاركم بأن هناك تأخيرًا خارج عن إرادتنا بسبب (الطرف الثالث/السبب).
+الإجراء المتخذ: (ما تم فعله).
+الموعد الجديد المتوقع: (تاريخ/وقت).
+نعتذر عن الإزعاج وسنوافيكم بتحديث خلال (مدة).`
+        },
+
+        // ======================
+        // GENERAL
+        // ======================
+        {
+          id: "requirements_received",
+          title: "تأكيد استلام متطلبات العميل",
+          category: "general",
+          tags: ["عام","استلام","متطلبات","requirements","وثائق","بيانات","بدء","تنفيذ"],
+          text:
+`مرحبًا (اسم العميل)،
+تم استلام المتطلبات التالية: (…).
+سنبدأ التنفيذ وفقًا لما ورد، وسنشارككم:
+- خطة التنفيذ المختصرة خلال (مدة)
+- أول تحديث حالة بتاريخ (تاريخ)
+شكرًا لكم.`
+        },
+        {
+          id: "scope_change",
+          title: "تغيير نطاق العمل (Scope Change)",
+          category: "general",
+          tags: ["عام","نطاق","Scope","تغيير","إضافة","استبعاد","تكلفة","مدة","اعتماد"],
+          text:
+`مرحبًا (اسم العميل)،
+بخصوص طلبكم (التغيير/الإضافة)، يلزم تحديث نطاق العمل كالتالي:
+- الإضافة/التغيير: (…)
+- الأثر على المدة: (…)
+- الأثر على التكلفة: (…)
+نرجو تأكيدكم لاعتماد التغيير قبل المتابعة.`
+        },
+        {
+          id: "docs_request",
+          title: "طلب مستندات/بيانات لبدء العمل",
+          category: "general",
+          tags: ["عام","بدء العمل","مستندات","وثائق","بيانات","requirements","onboarding","عميل"],
+          text:
+`مرحبًا (اسم العميل)،
+لبدء العمل بسرعة نحتاج منكم التالي:
+1) (مستند/بيان 1)
+2) (مستند/بيان 2)
+3) (مستند/بيان 3)
+بعد الاستلام سنبدأ مباشرة ونرسل خطة التنفيذ خلال (مدة).`
+        },
+        {
+          id: "closure_renewal",
+          title: "رسالة إغلاق عقد + طلب تجديد",
+          category: "general",
+          tags: ["عام","إغلاق","عقد","تجديد","renewal","متابعة","مرحلة جديدة","اتفاق"],
+          text:
+`مرحبًا (اسم العميل)،
+يسعدنا إبلاغكم بإغلاق (العقد/المرحلة) وتسليم (المخرجات) بتاريخ (التاريخ).
+إذا رغبتهم، يمكننا تجديد التعاون للمرحلة التالية:
+- الهدف: (…)
+- المدة: (…)
+هل يناسبكم تحديد موعد 15 دقيقة لمناقشة التجديد؟`
+        },
+        {
+          id: "task_done",
+          title: "إغلاق مهمة/تأكيد إنجاز",
+          category: "general",
+          tags: ["عام","إنجاز","إغلاق","تسليم","closure","done","مخرجات","نتيجة"],
+          text:
+`مرحبًا (اسم العميل)،
+تم إنجاز (المهمة/الخدمة) وتسليم (المخرجات) بتاريخ (التاريخ).
+إذا لديكم أي تعديل بسيط أو ملاحظة، يسعدنا تنفيذها خلال (مدة).
+شكرًا لكم.`
+        }
+      ];
+
+      const listEl = document.getElementById("tplList");
+      const searchEl = document.getElementById("searchInput");
+
+      let activeTab = "all";
+
+      // LocalStorage
+      const LS_FAVS = "mytodo_tpl_favs_v1";
+      const LS_EDITS = "mytodo_tpl_edits_v1";
+
+      function loadFavs(){
+        try { return new Set(JSON.parse(localStorage.getItem(LS_FAVS) || "[]")); }
+        catch { return new Set(); }
+      }
+      function saveFavs(set){
+        localStorage.setItem(LS_FAVS, JSON.stringify(Array.from(set)));
+      }
+      function loadEdits(){
+        try { return JSON.parse(localStorage.getItem(LS_EDITS) || "{}"); }
+        catch { return {}; }
+      }
+      function saveEdits(obj){
+        localStorage.setItem(LS_EDITS, JSON.stringify(obj));
+      }
+      function getAllTemplates(){
+        const store = loadEdits();
+        const custom = Array.isArray(store.custom) ? store.custom : [];
+        return [...TEMPLATES, ...custom];
+      }
+
+      function esc(s){
+        return String(s).replace(/[&<>"']/g, m => ({
+          "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+        }[m]));
+      }
+
+      function render(items){
+        const favs = loadFavs();
+        listEl.innerHTML = "";
+
+        if(!items.length){
+          listEl.innerHTML = `<li class="card" style="padding:12px;">لا توجد نتائج.</li>`;
+          return;
+        }
+
+        for(const item of items){
+          const li = document.createElement("li");
+          li.className = "card";
+          li.style.padding = "12px";
+
+          const tagsLine = (item.tags || []).join(" • ");
+          const isFav = favs.has(item.id) ? "⭐" : "☆";
+
+          // هل هذا القالب نسخة شخصية؟
+const isCustom = String(item.id || "").startsWith("custom_");
+
+// زر الحذف يظهر فقط للنسخ الشخصية
+const deleteBtnHtml = isCustom
+  ? `<button type="button" class="btn-danger small" data-del="${esc(item.id)}">🗑 حذف</button>`
+  : "";
+
+// زر "نسختي" يظهر فقط للقوالب الأصلية (لأن النسخ الشخصية لا تحتاج نسخ منها)
+const cloneBtnHtml = !isCustom
+  ? `<button type="button" class="btn-primary small" data-edit="${esc(item.id)}">✏️ نسختي</button>`
+  : "";
+
+        li.innerHTML = `
+        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:space-between; align-items:flex-start;">
+            <div style="flex:1; min-width:240px;">
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+                <div style="font-weight:800;">${esc(item.title)}</div>
+                <div style="color:var(--muted); font-size:12px;">${esc(item.category)}</div>
+            </div>
+
+            <div style="color:var(--muted); font-size:12px; margin:8px 0;">
+                ${esc(tagsLine)}
+            </div>
+
+            <pre style="margin:0; white-space:pre-wrap; color:var(--muted); font-family:inherit;">${esc(item.text)}</pre>
+            </div>
+
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" class="btn-primary small" data-fav="${esc(item.id)}">${isFav} مفضلة</button>
+            ${cloneBtnHtml}
+            <button type="button" class="btn-gold small" data-copy="${esc(item.text)}">نسخ</button>
+            <button type="button" class="btn-primary small" data-wa="${esc(item.text)}">واتساب</button>
+            ${deleteBtnHtml}
+            </div>
+        </div>
+        `;
+          listEl.appendChild(li);
+        }
+      }
+
+      function filter(){
+        const q = (searchEl.value || "").trim().toLowerCase();
+        const favs = loadFavs();
+
+        const ALL = getAllTemplates();
+        const filtered = ALL.filter(t => {
+          // Tab filter
+        let okTab = true;
+
+        if(activeTab === "favs") {
+        okTab = favs.has(t.id);
+        } else if(activeTab === "custom") {
+        okTab = String(t.id || "").startsWith("custom_");
+        } else if(activeTab !== "all") {
+        okTab = (t.category === activeTab);
+        }
+
+        if(!okTab) return false;
+
+          // Search filter
+          if(!q) return true;
+
+          const hay = [t.title, t.text, ...(t.tags || [])].join(" ").toLowerCase();
+          return hay.includes(q);
+        });
+
+        render(filtered);
+      }
+
+      // COPY
+      document.addEventListener("click", async (e) => {
+        const btn = e.target.closest("button[data-copy]");
+        if(!btn) return;
+        const text = btn.getAttribute("data-copy") || "";
+        try{
+          await navigator.clipboard.writeText(text);
+          btn.textContent = "✅ تم";
+          setTimeout(()=> btn.textContent = "نسخ", 900);
+        }catch{
+          alert("تعذر النسخ. جرّب النسخ اليدوي.");
+        }
+      });
+
+      // WHATSAPP
+      document.addEventListener("click", (e) => {
+        const waBtn = e.target.closest("button[data-wa]");
+        if(!waBtn) return;
+
+        const text = waBtn.getAttribute("data-wa") || "";
+        const url = "https://wa.me/?text=" + encodeURIComponent(text);
+        window.open(url, "_blank", "noopener");
+      });
+
+      // ⭐ Fav + ✏️ Clone (single listener)
+      document.addEventListener("click", (e) => {
+        // ⭐ Favorite toggle
+        const favBtn = e.target.closest("button[data-fav]");
+        if (favBtn) {
+          const id = favBtn.getAttribute("data-fav");
+          const favs = loadFavs();
+          if (favs.has(id)) favs.delete(id);
+          else favs.add(id);
+          saveFavs(favs);
+          filter();
+          return;
+        }
+        // 🗑 Delete personal copy
+        const delBtn = e.target.closest("button[data-del]");
+        if (delBtn) {
+        const id = delBtn.getAttribute("data-del");
+        if (!id || !id.startsWith("custom_")) return;
+
+        if (!confirm("هل تريد حذف هذه النسخة الشخصية؟")) return;
+
+        const store = loadEdits();
+        const customArr = Array.isArray(store.custom) ? store.custom : [];
+        store.custom = customArr.filter(x => x.id !== id);
+        saveEdits(store);
+
+        filter();
+        return;
+        }
+        // ✏️ Create personal copy (clone)
+        const editBtn = e.target.closest("button[data-edit]");
+        if (editBtn) {
+          const id = editBtn.getAttribute("data-edit");
+          const base = TEMPLATES.find(t => t.id === id);
+          if (!base) return;
+
+          const newTitle = prompt("عنوان النسخة الشخصية:", `${base.title} — نسختي`);
+          if (newTitle === null) return;
+
+          const newText = prompt("نص النسخة الشخصية:", base.text);
+          if (newText === null) return;
+
+          const store = loadEdits();
+          const customArr = Array.isArray(store.custom) ? store.custom : [];
+          const newId = `custom_${Date.now()}`;
+
+          customArr.push({
+            id: newId,
+            title: (newTitle.trim() || `${base.title} — نسختي`),
+            text: newText,
+            category: base.category,
+            tags: base.tags
+          });
+
+          store.custom = customArr;
+          saveEdits(store);
+
+          filter();
+          return;
+        }
+      });
+
+      // TABS (single listener) ✅ هذا هو الذي كان ناقصًا
+      document.addEventListener("click", (e) => {
+        const tab = e.target.closest("button.tab-btn");
+        if(!tab) return;
+
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        tab.classList.add("active");
+
+        activeTab = tab.getAttribute("data-tab") || "all";
+        filter();
+      });
+
+      // Search
+      searchEl.addEventListener("input", filter);
+
+      // First render
+      filter();
+    }
+
+    initPage();
+  </script>
+</body>
+</html>

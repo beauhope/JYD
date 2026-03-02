@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>حاسبات سريعة</title>
+
+  <!-- FAVICON — MyTodo -->
+  <link rel="icon" type="image/svg+xml"
+    href='data:image/svg+xml,
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="%230b1020"/>
+          <stop offset="1" stop-color="%234f7cff"/>
+        </linearGradient>
+      </defs>
+      <rect width="64" height="64" rx="14" fill="url(%23g)"/>
+      <rect x="4" y="4" width="56" height="56" rx="12"
+            fill="none" stroke="%23fbbf24" stroke-width="2"/>
+      <text x="50%" y="52%" text-anchor="middle"
+            font-family="Arial, sans-serif"
+            font-size="22"
+            font-weight="800"
+            fill="%23eef2ff">MT</text>
+      <text x="50%" y="78%" text-anchor="middle"
+            font-family="Arial, sans-serif"
+            font-size="10"
+            font-weight="700"
+            fill="%23fbbf24">TODO</text>
+    </svg>'>
+
+  <link rel="manifest" href="../manifest.webmanifest">
+  <meta name="theme-color" content="#0a1124">
+  <link rel="stylesheet" href="../css/style.css?v=20260218_2">
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("../sw.js", { scope: "../" });
+      });
+    }
+  </script>
+</head>
+
+<body>
+  <div id="shellMount"></div>
+
+  <script>
+    async function mountShell(){
+      const res = await fetch("../templates/page-shell.html", { cache: "no-store" });
+      const shell = await res.text();
+      document.getElementById("shellMount").innerHTML = shell;
+    }
+
+    function n(v){
+      const x = Number(String(v).replace(",", "."));
+      return Number.isFinite(x) ? x : 0;
+    }
+
+    async function initPage(){
+      await mountShell();
+
+      const content = document.getElementById("pageContent");
+      const title = document.getElementById("pageTitle");
+      const subtitle = document.getElementById("pageSubtitle");
+
+      if(title) title.textContent = "🧮 حاسبات سريعة";
+      if(subtitle) subtitle.textContent = "أدوات صغيرة مفيدة للعمل";
+
+      content.innerHTML = `
+        <div class="section-accordion active">
+          <div class="section-header">
+            <span>✅ نسبة الإنجاز</span>
+            <svg class="section-icon" width="18" height="18" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M7 10l5 5 5-5z"/>
+            </svg>
+          </div>
+          <div class="section-content" style="max-height:none; opacity:1; padding:16px;">
+            <div class="row">
+              <div class="field">
+                <label>عدد المنجز</label>
+                <input id="doneVal" type="number" placeholder="مثال: 35">
+              </div>
+              <div class="field">
+                <label>الإجمالي</label>
+                <input id="totalVal" type="number" placeholder="مثال: 50">
+              </div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <button class="btn-gold small" id="calcProgress">احسب</button>
+              <button class="btn-primary small" id="clearProgress">مسح</button>
+            </div>
+            <div style="margin-top:10px; color:var(--muted);" id="progressOut">—</div>
+          </div>
+        </div>
+
+        <div class="section-accordion active">
+          <div class="section-header">
+            <span>💰 هامش الربح</span>
+            <svg class="section-icon" width="18" height="18" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M7 10l5 5 5-5z"/>
+            </svg>
+          </div>
+          <div class="section-content" style="max-height:none; opacity:1; padding:16px;">
+            <div class="row">
+              <div class="field">
+                <label>سعر البيع</label>
+                <input id="sellVal" type="number" placeholder="مثال: 10000">
+              </div>
+              <div class="field">
+                <label>التكلفة</label>
+                <input id="costVal" type="number" placeholder="مثال: 7500">
+              </div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <button class="btn-gold small" id="calcMargin">احسب</button>
+              <button class="btn-primary small" id="clearMargin">مسح</button>
+            </div>
+            <div style="margin-top:10px; color:var(--muted);" id="marginOut">—</div>
+          </div>
+        </div>
+
+        <div class="section-accordion active">
+          <div class="section-header">
+            <span>💱 تحويل عملات (يدوي)</span>
+            <svg class="section-icon" width="18" height="18" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M7 10l5 5 5-5z"/>
+            </svg>
+          </div>
+          <div class="section-content" style="max-height:none; opacity:1; padding:16px;">
+            <div class="row">
+              <div class="field">
+                <label>المبلغ</label>
+                <input id="amtVal" type="number" placeholder="مثال: 2000">
+              </div>
+              <div class="field">
+                <label>من</label>
+                <select id="fromCur">
+                  <option value="MAD">MAD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="USD">USD</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>إلى</label>
+                <select id="toCur">
+                   <option value="EUR">EUR</option>
+                  <option value="MAD">MAD</option>
+                  <option value="USD">USD</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:10px;">
+              <div class="field">
+                <label>سعر الصرف (1 من = كم إلى)</label>
+                <input id="rateVal" type="number" placeholder="مثال: 0.37">
+                <small style="color:var(--muted);">ضع السعر يدويًا حسب السوق اليوم.</small>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:10px;">
+              <button class="btn-gold small" id="calcFx">حوّل</button>
+              <button class="btn-primary small" id="clearFx">مسح</button>
+            </div>
+            <div style="margin-top:10px; color:var(--muted);" id="fxOut">—</div>
+          </div>
+        </div>
+      `;
+
+      // Progress
+      document.getElementById("calcProgress").addEventListener("click", () => {
+        const done = n(document.getElementById("doneVal").value);
+        const total = n(document.getElementById("totalVal").value);
+        const out = document.getElementById("progressOut");
+        if(total <= 0){
+          out.textContent = "⚠️ أدخل إجمالي أكبر من صفر.";
+          return;
+        }
+        const pct = (done / total) * 100;
+        out.textContent = `نسبة الإنجاز: ${pct.toFixed(1)}%  (منجز: ${done} / إجمالي: ${total})`;
+      });
+      document.getElementById("clearProgress").addEventListener("click", () => {
+        document.getElementById("doneVal").value = "";
+        document.getElementById("totalVal").value = "";
+        document.getElementById("progressOut").textContent = "—";
+      });
+
+      // Margin
+      document.getElementById("calcMargin").addEventListener("click", () => {
+        const sell = n(document.getElementById("sellVal").value);
+        const cost = n(document.getElementById("costVal").value);
+        const out = document.getElementById("marginOut");
+        if(sell <= 0){
+          out.textContent = "⚠️ أدخل سعر بيع أكبر من صفر.";
+          return;
+        }
+        const profit = sell - cost;
+        const margin = (profit / sell) * 100;
+        out.textContent = `الربح: ${profit.toFixed(2)} | هامش الربح: ${margin.toFixed(1)}%`;
+      });
+      document.getElementById("clearMargin").addEventListener("click", () => {
+        document.getElementById("sellVal").value = "";
+        document.getElementById("costVal").value = "";
+        document.getElementById("marginOut").textContent = "—";
+      });
+
+      // FX
+      document.getElementById("calcFx").addEventListener("click", () => {
+        const amt = n(document.getElementById("amtVal").value);
+        const from = document.getElementById("fromCur").value;
+        const to = document.getElementById("toCur").value;
+        const rate = n(document.getElementById("rateVal").value);
+        const out = document.getElementById("fxOut");
+
+        if(rate <= 0){
+          out.textContent = "⚠️ أدخل سعر صرف صحيح (أكبر من صفر).";
+          return;
+        }
+        const res = amt * rate;
+        out.textContent = `${amt} ${from} ≈ ${res.toFixed(2)} ${to} (بسعر: 1 ${from} = ${rate} ${to})`;
+      });
+      document.getElementById("clearFx").addEventListener("click", () => {
+        document.getElementById("amtVal").value = "";
+        document.getElementById("rateVal").value = "";
+        document.getElementById("fxOut").textContent = "—";
+      });
+    }
+
+    initPage();
+  </script>
+</body>
+</html>

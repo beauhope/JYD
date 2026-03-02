@@ -1160,3 +1160,36 @@ a.btn-primary, a.btn-gold, a.btn-danger{
   justify-content:center;
   text-decoration:none;
 }
+
+/* ===============================
+   TABS (Templates)
+=============================== */
+.tabs-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.tab-btn{
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  border: 1px solid var(--gold-soft);
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: .25s ease;
+  font-family: "Cairo", system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.tab-btn:hover{
+  border-color: var(--gold);
+  box-shadow: 0 0 10px var(--gold-glow);
+}
+
+.tab-btn.active{
+  border-color: rgba(198,167,74,.8);
+  background: rgba(198,167,74,.10);
+  box-shadow: 0 0 12px rgba(198,167,74,.25);
+}

@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>سجل العملاء</title>
+
+  <!-- FAVICON — MyTodo -->
+  <link rel="icon" type="image/svg+xml"
+    href='data:image/svg+xml,
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="%230b1020"/>
+          <stop offset="1" stop-color="%234f7cff"/>
+        </linearGradient>
+      </defs>
+      <rect width="64" height="64" rx="14" fill="url(%23g)"/>
+      <rect x="4" y="4" width="56" height="56" rx="12"
+            fill="none" stroke="%23fbbf24" stroke-width="2"/>
+      <text x="50%" y="52%" text-anchor="middle"
+            font-family="Arial, sans-serif"
+            font-size="22"
+            font-weight="800"
+            fill="%23eef2ff">MT</text>
+      <text x="50%" y="78%" text-anchor="middle"
+            font-family="Arial, sans-serif"
+            font-size="10"
+            font-weight="700"
+            fill="%23fbbf24">TODO</text>
+    </svg>'>
+
+  <link rel="manifest" href="../manifest.webmanifest">
+  <meta name="theme-color" content="#0a1124">
+  <link rel="stylesheet" href="../css/style.css?v=20260218_2">
+  <style>
+  .sync-ok{
+    color:#7dffb3;
+    font-weight:800;
+  }
+  .sync-off{
+    color:#ff7b7b;
+    font-weight:800;
+  }
+</style>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("../sw.js", { scope: "../" });
+      });
+    }
+  </script>
+</head>
+
+<body>
+  <div id="shellMount"></div>
+
+  <script type="module">
+    // =========================
+    // Shell
+    // =========================
+    async function mountShell(){
+      const res = await fetch("../templates/page-shell.html", { cache: "no-store" });
+      const shell = await res.text();
+      document.getElementById("shellMount").innerHTML = shell;
+    }
+
+    // =========================
+    // LocalStorage (always)
+    // =========================
+    const LS_KEY = "mytodo_crm_v1";
+
+    function loadLocal(){
+      try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); }
+      catch { return []; }
+    }
+    function saveLocal(rows){
+      localStorage.setItem(LS_KEY, JSON.stringify(rows));
+    }
+    function uid(){
+      return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    }
+    function esc(s){
+      return String(s).replace(/[&<>"']/g, m => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[m]));
+    }
+    function normalizePhone(s){
+      return String(s || "").replace(/\s+/g, "").trim();
+    }
+
+    function statusLabel(v){
+      const map = {
+        lead: "Lead",
+        prospect: "Prospect",
+        active: "نشط",
+        paused: "متوقف",
+        closed: "مغلق"
+      };
+      return map[v] || v;
+    }
+
+    // =========================
+    // Firebase (optional)
+    // =========================
+    let currentUser = null;
+
+    import { auth, db } from "../js/firebase.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+    import {
+      collection, doc, setDoc, deleteDoc, getDocs, query, orderBy, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    function colRef(uid){
+      return collection(db, "users", uid, "crmClients");
+    }
+
+    async function fbLoadAll(){
+      if(!currentUser) return null;
+      const qy = query(colRef(currentUser.uid), orderBy("createdAt", "desc"));
+      const snap = await getDocs(qy);
+      const arr = [];
+      snap.forEach(d => {
+        const data = d.data();
+        arr.push({
+          id: d.id,
+          name: data.name || "",
+          phone: data.phone || "",
+          status: data.status || "lead",
+          lastContact: data.lastContact || "",
+          notes: data.notes || "",
+          createdAt: data.createdAt || null
+        });
+      });
+      return arr;
+    }
+
+    async function fbUpsert(item){
+      if(!currentUser) return;
+      const ref = doc(db, "users", currentUser.uid, "crmClients", item.id);
+      await setDoc(ref, {
+        name: item.name,
+        phone: item.phone,
+        status: item.status,
+        lastContact: item.lastContact,
+        notes: item.notes,
+        createdAt: item.createdAt || serverTimestamp()
+      }, { merge: true });
+    }
+
+    async function fbRemove(id){
+      if(!currentUser) return;
+      const ref = doc(db, "users", currentUser.uid, "crmClients", id);
+      await deleteDoc(ref);
+    }
+
+    // =========================
+    // UI + Logic
+    // =========================
+    let rows = [];
+    let editingId = null;
+
+    function render(list){
+      const ul = document.getElementById("crmList");
+      ul.innerHTML = "";
+
+      if(!list.length){
+        ul.innerHTML = `<li class="card" style="padding:12px;">لا توجد بيانات.</li>`;
+        return;
+      }
+
+      for(const c of list){
+        const li = document.createElement("li");
+        li.className = "card";
+        li.style.padding = "12px";
+
+        li.innerHTML = `
+          <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:space-between; align-items:flex-start;">
+            <div style="flex:1; min-width:240px;">
+              <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+                <div style="font-weight:900;">${esc(c.name || "بدون اسم")}</div>
+                <div style="color:var(--muted); font-size:12px;">${esc(statusLabel(c.status))}</div>
+              </div>
+
+              <div style="color:var(--muted); margin-top:6px; direction:ltr; text-align:right;">
+                📞 ${esc(c.phone || "—")}
+              </div>
+
+              <div style="color:var(--muted); margin-top:6px;">
+                آخر تواصل: <span style="direction:ltr;">${esc(c.lastContact || "—")}</span>
+              </div>
+
+              ${c.notes ? `<div style="margin-top:8px; color:var(--muted); white-space:pre-wrap;">📝 ${esc(c.notes)}</div>` : ``}
+            </div>
+
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <a class="btn-primary small" href="tel:${esc(c.phone)}" style="text-decoration:none;">اتصال</a>
+              <button type="button" class="btn-primary small" data-wa="${esc(c.id)}">واتساب</button>
+              <button type="button" class="btn-gold small" data-edit="${esc(c.id)}">تعديل</button>
+              <button type="button" class="btn-danger small" data-del="${esc(c.id)}">حذف</button>
+            </div>
+          </div>
+        `;
+        ul.appendChild(li);
+      }
+    }
+
+    function applyFilter(){
+      const q = (document.getElementById("searchInput").value || "").trim().toLowerCase();
+      const st = document.getElementById("statusFilter").value;
+
+      const filtered = rows.filter(x => {
+        const okStatus = (st === "all") || (x.status === st);
+        if(!okStatus) return false;
+        if(!q) return true;
+        const hay = [x.name, x.phone, x.status, x.lastContact, x.notes].join(" ").toLowerCase();
+        return hay.includes(q);
+      });
+
+      render(filtered);
+      document.getElementById("countVal").textContent = String(filtered.length);
+    }
+
+    function fillForm(item){
+      document.getElementById("cName").value = item?.name || "";
+      document.getElementById("cPhone").value = item?.phone || "";
+      document.getElementById("cStatus").value = item?.status || "lead";
+      document.getElementById("cLast").value = item?.lastContact || "";
+      document.getElementById("cNotes").value = item?.notes || "";
+    }
+
+    function getForm(){
+      return {
+        name: (document.getElementById("cName").value || "").trim(),
+        phone: normalizePhone(document.getElementById("cPhone").value),
+        status: document.getElementById("cStatus").value,
+        lastContact: document.getElementById("cLast").value,
+        notes: (document.getElementById("cNotes").value || "").trim()
+      };
+    }
+
+    function resetForm(){
+      editingId = null;
+      fillForm(null);
+      document.getElementById("saveBtn").textContent = "إضافة";
+      document.getElementById("cancelEditBtn").classList.add("hidden");
+    }
+
+    async function saveItem(){
+      const data = getForm();
+      if(!data.name){
+        alert("أدخل اسم العميل.");
+        return;
+      }
+
+      if(!editingId){
+        const item = { id: uid(), ...data, createdAt: null };
+        rows.unshift(item);
+        saveLocal(rows);
+        if(currentUser) await fbUpsert(item);
+      } else {
+        const idx = rows.findIndex(x => x.id === editingId);
+        if(idx === -1) return;
+        rows[idx] = { ...rows[idx], ...data };
+        saveLocal(rows);
+        if(currentUser) await fbUpsert(rows[idx]);
+      }
+
+      resetForm();
+      applyFilter();
+    }
+
+    async function deleteItem(id){
+      if(!confirm("حذف هذا العميل؟")) return;
+      rows = rows.filter(x => x.id !== id);
+      saveLocal(rows);
+      if(currentUser) await fbRemove(id);
+      applyFilter();
+    }
+
+      function showSyncStatus(){
+  const el = document.getElementById("syncStatus");
+  if(!el) return;
+
+  // امسح أي classes قديمة
+  el.classList.remove("sync-ok","sync-off");
+
+  if(currentUser){
+    el.textContent = "✅ المزامنة مفعلة";
+    el.classList.add("sync-ok");
+  } else {
+    el.textContent = "❌ المزامنة غير مفعلة (يعمل محليًا)";
+    el.classList.add("sync-off");
+  }
+}
+
+    // =========================
+    // Start
+    // =========================
+    await mountShell();
+
+    const content = document.getElementById("pageContent");
+    const title = document.getElementById("pageTitle");
+    const subtitle = document.getElementById("pageSubtitle");
+
+    if(title) title.textContent = "📇 سجل العملاء (CRM Mini)";
+    if(subtitle) subtitle.textContent = "اسم + هاتف + حالة + آخر تواصل";
+
+    content.innerHTML = `
+      <div class="card" style="padding:14px; margin-bottom:12px;">
+        <div style="font-weight:900; margin-bottom:6px;">حالة المزامنة</div>
+        <div id="syncStatus" style="color:var(--muted);">—</div>
+      </div>
+
+      <div class="card" style="padding:14px; margin-bottom:12px;">
+        <div class="row">
+          <div class="field">
+            <label>اسم العميل</label>
+            <input id="cName" placeholder="مثال: شركة ... / السيد ...">
+          </div>
+
+          <div class="field" style="max-width:220px;">
+            <label>الهاتف</label>
+            <input id="cPhone" placeholder="مثال: +2126...">
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <div class="field" style="max-width:220px;">
+            <label>الحالة</label>
+            <select id="cStatus">
+              <option value="lead">Lead</option>
+              <option value="prospect">Prospect</option>
+              <option value="active">نشط</option>
+              <option value="paused">متوقف</option>
+              <option value="closed">مغلق</option>
+            </select>
+          </div>
+
+          <div class="field" style="max-width:260px;">
+            <label>آخر تواصل</label>
+            <input id="cLast" type="date">
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <div class="field">
+            <label>ملاحظات (اختياري)</label>
+            <textarea id="cNotes" placeholder="ماذا تم؟ ماذا سنفعل؟"></textarea>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <button type="button" class="btn-gold small" id="saveBtn">إضافة</button>
+          <button type="button" class="btn-primary small hidden" id="cancelEditBtn">إلغاء التعديل</button>
+          <button type="button" class="btn-danger small" id="resetLocalBtn">🧹 مسح البيانات المحلية</button>
+        </div>
+      </div>
+
+      <div class="toolbar" style="margin-top:0;">
+        <input id="searchInput" placeholder="بحث بالاسم/الهاتف/الملاحظات...">
+        <select id="statusFilter">
+          <option value="all">كل الحالات</option>
+          <option value="lead">Lead</option>
+          <option value="prospect">Prospect</option>
+          <option value="active">نشط</option>
+          <option value="paused">متوقف</option>
+          <option value="closed">مغلق</option>
+        </select>
+
+        <div class="pill">
+          العدد:
+          <b id="countVal">0</b>
+        </div>
+      </div>
+
+      <ul id="crmList" class="list"></ul>
+
+      <div style="margin-top:12px; color:var(--muted); font-size:13px;">
+        ملاحظة: زر "مسح البيانات المحلية" يمسح LocalStorage فقط. بيانات Firebase (إن وُجدت) لا تُمسح بهذا الزر.
+      </div>
+    `;
+
+    // Local first (fast)
+    rows = loadLocal();
+
+    // Auth state → enable firebase if logged in
+    onAuthStateChanged(auth, async (u) => {
+      currentUser = u || null;
+      showSyncStatus();
+
+      if(currentUser){
+        try{
+          const fbRows = await fbLoadAll();
+          if(Array.isArray(fbRows)){
+            rows = fbRows;
+            saveLocal(rows); // optional: mirror
+          }
+        }catch(err){
+          console.log("Firebase load error:", err);
+        }
+      }
+
+      applyFilter();
+    });
+
+    // Events
+    document.getElementById("saveBtn").addEventListener("click", saveItem);
+    document.getElementById("cancelEditBtn").addEventListener("click", resetForm);
+
+    document.getElementById("searchInput").addEventListener("input", applyFilter);
+    document.getElementById("statusFilter").addEventListener("change", applyFilter);
+
+    document.getElementById("resetLocalBtn").addEventListener("click", () => {
+      if(!confirm("مسح كل البيانات المحلية (LocalStorage)؟")) return;
+      saveLocal([]);
+      rows = [];
+      resetForm();
+      applyFilter();
+    });
+
+    document.addEventListener("click", (e) => {
+      const editBtn = e.target.closest("button[data-edit]");
+      if(editBtn){
+        const id = editBtn.getAttribute("data-edit");
+        const item = rows.find(x => x.id === id);
+        if(!item) return;
+        editingId = id;
+        fillForm(item);
+        document.getElementById("saveBtn").textContent = "حفظ التعديل";
+        document.getElementById("cancelEditBtn").classList.remove("hidden");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      const delBtn = e.target.closest("button[data-del]");
+      if(delBtn){
+        deleteItem(delBtn.getAttribute("data-del"));
+        return;
+      }
+
+      const waBtn = e.target.closest("button[data-wa]");
+      if(waBtn){
+        const id = waBtn.getAttribute("data-wa");
+        const item = rows.find(x => x.id === id);
+        if(!item) return;
+
+        const msg =
+`عميل: ${item.name}
+هاتف: ${item.phone || "—"}
+حالة: ${statusLabel(item.status)}
+آخر تواصل: ${item.lastContact || "—"}
+ملاحظات: ${item.notes || "—"}`;
+
+        window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank", "noopener");
+        return;
+      }
+    });
+
+    showSyncStatus();
+    applyFilter();
+  </script>
+</body>
+</html>
