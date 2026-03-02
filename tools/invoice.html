@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>عرض سعر/فاتورة سريعة</title>
+  <title>فاتورة/عرض سعر</title>
 
   <!-- FAVICON — MyTodo -->
   <link rel="icon" type="image/svg+xml"
@@ -32,73 +32,7 @@
 
   <link rel="manifest" href="../manifest.webmanifest">
   <meta name="theme-color" content="#0a1124">
-  <link rel="stylesheet" href="../css/style.css?v=20260218_2">
-
-  <style>
-    .items-table{
-      width:100%;
-      border-collapse:separate;
-      border-spacing:0;
-      overflow:hidden;
-      border:1px solid rgba(198,167,74,.22);
-      border-radius:16px;
-      background: rgba(255,255,255,.01);
-    }
-    .items-table th, .items-table td{
-      padding:10px;
-      border-bottom:1px solid rgba(198,167,74,.12);
-      vertical-align:middle;
-    }
-    .items-table th{
-      color:var(--gold);
-      font-weight:900;
-      background: rgba(198,167,74,.06);
-      text-align:center;
-    }
-    .items-table td{ text-align:center; }
-    .items-table td:nth-child(2){ text-align:right; }
-    .items-table input{
-      width:100%;
-      text-align:center;
-      padding:8px 10px;
-      border-radius:12px;
-    }
-    .items-table input.item-name{ text-align:right; }
-    .sum-box{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:space-between;
-      align-items:center;
-    }
-    .sum-line{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      color:var(--muted);
-      font-size:13px;
-    }
-    .sum-line b{ color:var(--text); }
-    .badge-soft{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding:4px 10px;
-      border-radius:999px;
-      border:1px solid rgba(198,167,74,.25);
-      background: rgba(198,167,74,.08);
-      color:#fff3cf;
-      font-weight:800;
-      font-size:12px;
-    }
-    pre.out{
-      margin:0;
-      white-space:pre-wrap;
-      color:var(--muted);
-      font-family:inherit;
-      line-height:1.6;
-    }
-  </style>
+  <link rel="stylesheet" href="../css/style.css?v=20260302_1">
 
   <script>
     if ("serviceWorker" in navigator) {
@@ -107,6 +41,72 @@
       });
     }
   </script>
+
+  <style>
+    /* تحسينات بسيطة داخل صفحة الفواتير فقط */
+    .inv-toolbar{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px;
+    }
+    .inv-toolbar .right{
+      margin-inline-start:auto; display:flex; gap:8px; flex-wrap:wrap;
+    }
+    .inv-pills{
+      display:flex; gap:8px; flex-wrap:wrap;
+    }
+    .inv-table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      min-width: 760px;
+    }
+    .inv-table th, .inv-table td{
+      padding:10px 8px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      vertical-align:top;
+    }
+    .inv-table th{
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
+      text-align:right;
+      font-weight:800;
+      font-size:13px;
+    }
+    .inv-table td{ font-size:13px; }
+    .inv-table tr:last-child td{ border-bottom:none; }
+    .inv-table input, .inv-table textarea, .inv-table select{
+      width:100%;
+    }
+    .inv-totals{
+      display:grid; gap:8px;
+    }
+    .inv-line{
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 12px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      font-size:13px;
+    }
+    .inv-line b{ font-size:14px; }
+    .inv-grand{
+      border-color: rgba(198,167,74,.45);
+      background: rgba(198,167,74,.10);
+    }
+    .inv-grand span, .inv-grand b{ color: var(--gold); font-weight:900; }
+    @media (max-width: 820px){
+      .inv-scroll{ overflow:auto; }
+    }
+
+    /* طباعة مبسطة */
+    @media print{
+      body{ background:#fff !important; color:#111 !important; }
+      header, nav, footer, .sidebar, .topbar, .shell-header, .shell-footer { display:none !important; }
+      .inv-hide-print { display:none !important; }
+      .card{ box-shadow:none !important; border:1px solid #ddd !important; }
+    }
+  </style>
 </head>
 
 <body>
@@ -119,482 +119,362 @@
       document.getElementById("shellMount").innerHTML = shell;
     }
 
+    const $ = (id) => document.getElementById(id);
+
     function pad(n){ return String(n).padStart(2,"0"); }
     function todayISO(){
       const d = new Date();
       return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
     }
+    function genInvoiceNo(prefix){
+      const d = new Date();
+      const yy = String(d.getFullYear()).slice(-2);
+      const mm = pad(d.getMonth()+1);
+      const dd = pad(d.getDate());
+      const rnd = Math.floor(Math.random()*9000)+1000;
+      return `${prefix}-${yy}${mm}${dd}-${rnd}`;
+    }
+    function escapeHtml(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+    function money(n){
+      const cur = $("currency")?.value || "MAD";
+      const v = Number(n || 0);
+      return `${v.toFixed(2)} ${cur}`;
+    }
 
-    const LS_INV = "mytodo_invoice_generator_v1";
+    // LocalStorage (this page only)
+    const LS_INV = "mytodo_invoices_v0";
 
-    function loadState(){
+    function loadLocal(){
       try { return JSON.parse(localStorage.getItem(LS_INV) || "{}"); }
       catch { return {}; }
     }
-    function saveState(obj){
+    function saveLocal(obj){
       localStorage.setItem(LS_INV, JSON.stringify(obj));
     }
 
-    function num(x){
-      const n = Number(x);
-      return Number.isFinite(n) ? n : 0;
+    const state = {
+      invNo: "",
+      invDate: "",
+      docType: "invoice",
+      currency: "MAD",
+      sellerName: "",
+      sellerContact: "",
+      clientName: "",
+      refNote: "",
+      notes: "",
+      taxRate: "",
+      discount: "",
+      items: []
+    };
+
+    function ensureDefaults(){
+      if(!state.invDate) state.invDate = todayISO();
+      if(!state.invNo){
+        const prefix = (state.docType === "quote") ? "QTE" : "INV";
+        state.invNo = genInvoiceNo(prefix);
+      }
+      if(!Array.isArray(state.items) || state.items.length === 0){
+        state.items = [{ desc:"خدمة/منتج", qty:1, price:0 }];
+      }
     }
 
-    function money(n){
-      n = Math.round((n + Number.EPSILON) * 100) / 100;
-      return n.toFixed(2);
+    function render(){
+      const content = $("pageContent");
+      content.innerHTML = `
+        <div class="inv-toolbar inv-hide-print">
+          <button class="btn-primary small" id="addRowBtn">+ إضافة منتج/خدمة</button>
+          <button class="btn-gold small" id="printBtn">🖨️ طباعة</button>
+          <button class="btn-primary small" id="saveBtn">💾 حفظ</button>
+          <button class="btn-danger small" id="resetBtn">↺ تفريغ</button>
+
+          <div class="right inv-pills">
+            <div class="pill">رقم: <b id="invNoView">—</b></div>
+            <div class="pill">التاريخ: <b id="invDateView">—</b></div>
+          </div>
+        </div>
+
+        <div class="row" style="gap:10px;">
+          <div class="field" style="flex:1; min-width:220px;">
+            <label>النوع</label>
+            <select id="docType">
+              <option value="invoice">فاتورة</option>
+              <option value="quote">عرض سعر</option>
+            </select>
+          </div>
+
+          <div class="field" style="flex:1; min-width:220px;">
+            <label>العملة</label>
+            <select id="currency">
+              <option value="MAD">MAD</option>
+              <option value="SAR">SAR</option>
+              <option value="AED">AED</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row" style="gap:10px; margin-top:10px;">
+          <div class="field" style="flex:1; min-width:220px;">
+            <label>اسم البائع/الشركة</label>
+            <input id="sellerName" placeholder="مثال: MyTodo / ConsuTrain">
+          </div>
+          <div class="field" style="flex:1; min-width:220px;">
+            <label>هاتف/بريد</label>
+            <input id="sellerContact" placeholder="الهاتف أو البريد">
+          </div>
+        </div>
+
+        <div class="row" style="gap:10px; margin-top:10px;">
+          <div class="field" style="flex:1; min-width:220px;">
+            <label>اسم العميل</label>
+            <input id="clientName" placeholder="اسم العميل">
+          </div>
+          <div class="field" style="flex:1; min-width:220px;">
+            <label>مرجع/ملاحظة</label>
+            <input id="refNote" placeholder="PO-123 / مشروع...">
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:10px;">
+          <label>ملاحظات</label>
+          <textarea id="notes" placeholder="أي ملاحظات مختصرة..."></textarea>
+        </div>
+
+        <div class="row" style="gap:10px; margin-top:10px;">
+          <div class="field" style="flex:1; min-width:220px;">
+            <label>نسبة الضريبة % (اختياري)</label>
+            <input id="taxRate" type="number" min="0" step="0.01" placeholder="مثال: 20">
+          </div>
+          <div class="field" style="flex:1; min-width:220px;">
+            <label>خصم ثابت (اختياري)</label>
+            <input id="discount" type="number" min="0" step="0.01" placeholder="مثال: 50">
+          </div>
+        </div>
+
+        <div class="inv-scroll" style="margin-top:12px;">
+          <table class="inv-table">
+            <thead>
+              <tr>
+                <th>الوصف</th>
+                <th style="width:120px;">الكمية</th>
+                <th style="width:160px;">سعر الوحدة</th>
+                <th style="width:170px;">الإجمالي</th>
+                <th style="width:90px;">حذف</th>
+              </tr>
+            </thead>
+            <tbody id="itemsBody"></tbody>
+          </table>
+        </div>
+
+        <div class="card" style="margin-top:12px; padding:12px;">
+          <div class="inv-totals">
+            <div class="inv-line"><span style="color:var(--muted);">المجموع الفرعي</span><b id="subTotal">0.00</b></div>
+            <div class="inv-line"><span style="color:var(--muted);">الضريبة</span><b id="taxTotal">0.00</b></div>
+            <div class="inv-line"><span style="color:var(--muted);">الخصم</span><b id="discountTotal">0.00</b></div>
+            <div class="inv-line inv-grand"><span>الإجمالي النهائي</span><b id="grandTotal">0.00</b></div>
+          </div>
+        </div>
+        <div id="discountWarn" class="inv-hide-print" style="color:#fbbf24; margin-top:8px; display:none;">
+        ⚠️ الخصم أكبر من الإجمالي، تم تعديله تلقائيًا.
+      </div>
+      `;
+      
+      // fill
+      $("invNoView").textContent = state.invNo;
+      $("invDateView").textContent = state.invDate;
+
+      $("docType").value = state.docType;
+      $("currency").value = state.currency;
+
+      $("sellerName").value = state.sellerName;
+      $("sellerContact").value = state.sellerContact;
+      $("clientName").value = state.clientName;
+      $("refNote").value = state.refNote;
+      $("notes").value = state.notes;
+      $("taxRate").value = state.taxRate;
+      $("discount").value = state.discount;
+
+      renderItems();
+      calcTotals();
+      bindEvents();
     }
 
-    function esc(s){
-      return String(s).replace(/[&<>"']/g, m => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-      }[m]));
+    function renderItems(){
+      const tbody = $("itemsBody");
+      tbody.innerHTML = "";
+
+      state.items.forEach((it, idx) => {
+        const qty = Number(it.qty || 0);
+        const price = Number(it.price || 0);
+        const total = qty * price;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><input data-k="desc" data-i="${idx}" placeholder="اسم المنتج/الخدمة" value="${escapeHtml(it.desc)}"></td>
+          <td><input data-k="qty" data-i="${idx}" type="number" min="0" step="1" value="${qty}"></td>
+          <td><input data-k="price" data-i="${idx}" type="number" min="0" step="0.01" value="${price}"></td>
+          <td><b>${money(total)}</b></td>
+          <td style="text-align:center;">
+            <button class="btn-danger small inv-hide-print" data-del="${idx}">حذف</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll("input[data-k]").forEach(inp => {
+        inp.addEventListener("input", (e) => {
+          const i = Number(e.target.dataset.i);
+          const k = e.target.dataset.k;
+          let v = e.target.value;
+          if(k === "qty" || k === "price") v = Number(v || 0);
+          state.items[i][k] = v;
+
+          saveLocal(state);
+          renderItems();   // لتحديث إجمالي الصف
+          calcTotals();
+        });
+      });
+
+      tbody.querySelectorAll("button[data-del]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const i = Number(btn.dataset.del);
+          state.items.splice(i, 1);
+          if(state.items.length === 0) state.items.push({ desc:"خدمة/منتج", qty:1, price:0 });
+          saveLocal(state);
+          renderItems();
+          calcTotals();
+        });
+      });
     }
-    function cleanPhone(raw){
-  // يحذف المسافات والرموز ويُبقي + والأرقام فقط
-  let p = String(raw || "").trim();
-  p = p.replace(/[^\d+]/g, "");
-  // لو بدأ بـ 00 نحوله إلى +
-  if(p.startsWith("00")) p = "+" + p.slice(2);
-  // wa.me يحتاج رقم بدون +
-  return p.replace(/^\+/, "");
+
+    function calcTotals(){
+  const sub = state.items.reduce((s, it) => s + (Number(it.qty)||0)*(Number(it.price)||0), 0);
+  const taxRate = Number(state.taxRate || 0);
+
+  const tax = sub * (taxRate / 100);
+  const maxDiscount = sub + tax;
+
+  let discount = Number(state.discount || 0);
+  let clamped = false;
+
+  if(discount > maxDiscount){
+    discount = maxDiscount;
+    state.discount = String(discount.toFixed(2));
+    const discEl = $("discount");
+    if(discEl) discEl.value = state.discount;
+    clamped = true;
+    saveLocal(state);
+  }
+
+  const grand = (sub + tax) - discount;
+
+  $("subTotal").textContent = money(sub);
+  $("taxTotal").textContent = money(tax);
+  $("discountTotal").textContent = money(discount);
+  $("grandTotal").textContent = money(grand);
+
+  const warn = $("discountWarn");
+  if(warn) warn.style.display = clamped ? "block" : "none";
 }
+
+    function syncFromInputs(){
+      state.docType = $("docType").value;
+      state.currency = $("currency").value;
+
+      state.sellerName = $("sellerName").value.trim();
+      state.sellerContact = $("sellerContact").value.trim();
+      state.clientName = $("clientName").value.trim();
+      state.refNote = $("refNote").value.trim();
+      state.notes = $("notes").value.trim();
+
+      state.taxRate = $("taxRate").value;
+      state.discount = $("discount").value;
+
+      // إذا غيّر النوع نحدّث البادئة فقط عند التفريغ/أول مرة، لا نغيّر الرقم كل مرة
+      saveLocal(state);
+      calcTotals();
+      renderItems(); // لتحديث العملة
+    }
+
+    function addRow(){
+      state.items.push({ desc:"خدمة/منتج", qty:1, price:0 });
+      saveLocal(state);
+      renderItems();
+      calcTotals();
+    }
+
+    function doSave(){
+      syncFromInputs();
+      alert("تم الحفظ محليًا ✅");
+    }
+
+    function doReset(){
+      if(!confirm("تفريغ الصفحة (هذه الصفحة فقط)؟")) return;
+
+      state.docType = "invoice";
+      state.currency = "MAD";
+      state.invDate = todayISO();
+      state.invNo = genInvoiceNo("INV");
+
+      state.sellerName = "";
+      state.sellerContact = "";
+      state.clientName = "";
+      state.refNote = "";
+      state.notes = "";
+      state.taxRate = "";
+      state.discount = "";
+      state.items = [{ desc:"خدمة/منتج", qty:1, price:0 }];
+
+      saveLocal(state);
+      render();
+    }
+
+    function doPrint(){
+      // قبل الطباعة نضمن آخر قيم
+      syncFromInputs();
+      window.print();
+    }
+
+    function bindEvents(){
+      $("addRowBtn").addEventListener("click", addRow);
+      $("saveBtn").addEventListener("click", doSave);
+      $("resetBtn").addEventListener("click", doReset);
+      $("printBtn").addEventListener("click", doPrint);
+
+      ["docType","currency","sellerName","sellerContact","clientName","refNote","notes","taxRate","discount"]
+        .forEach(id => {
+          const el = $(id);
+          if(!el) return;
+          el.addEventListener("input", syncFromInputs);
+          el.addEventListener("change", syncFromInputs);
+        });
+    }
+
     async function initPage(){
       await mountShell();
 
-      const content = document.getElementById("pageContent");
-      const title = document.getElementById("pageTitle");
-      const subtitle = document.getElementById("pageSubtitle");
+      // ترويسة الصفحة داخل الـ shell
+      const title = $("pageTitle");
+      const subtitle = $("pageSubtitle");
 
-      if(title) title.textContent = "🧾 مُنشئ عرض سعر/فاتورة سريع";
-      if(subtitle) subtitle.textContent = "نسخ + واتساب (PDF لاحقًا)";
+      if(title) title.textContent = "🧾 فاتورة / عرض سعر";
+      if(subtitle) subtitle.textContent = "نسخة مبسطة — نفس ترويسة وتذييل MyTodo";
 
-      content.innerHTML = `
-        <div class="card" style="padding:14px; margin-bottom:12px;">
-          <div class="row">
-            <div class="field" style="max-width:220px;">
-              <label>النوع</label>
-              <select id="docType">
-                <option value="quotation">عرض سعر</option>
-                <option value="invoice">فاتورة</option>
-              </select>
-            </div>
+      // تحميل بيانات الصفحة
+      const saved = loadLocal();
+      Object.assign(state, saved || {});
+      ensureDefaults();
+      saveLocal(state);
 
-            <div class="field" style="max-width:220px;">
-              <label>العملة</label>
-              <select id="currency">
-                <option value="EUR">EUR (€)</option>
-                <option value="USD">USD</option>
-                <option value="MAD">MAD</option>
-              </select>
-            </div>
-
-            <div class="field" style="max-width:220px;">
-              <label>رقم الوثيقة</label>
-              <input id="docNo" placeholder="مثال: Q-001 / INV-2026-01">
-            </div>
-
-            <div class="field" style="max-width:220px;">
-              <label>التاريخ</label>
-              <input id="docDate" type="date">
-            </div>
-          </div>
-
-          <div class="row" style="margin-top:10px;">
-            <div class="field">
-              <label>اسم العميل</label>
-              <input id="clientName" placeholder="مثال: شركة ... / السيد ...">
-            </div>
-
-            <div class="field" style="max-width:260px;">
-              <label>هاتف/واتساب (اختياري)</label>
-              <input id="clientPhone" placeholder="+212... / +966...">
-            </div>
-          </div>
-
-          <div class="row" style="margin-top:10px;">
-            <div class="field">
-              <label>وصف مختصر (اختياري)</label>
-              <input id="docSubject" placeholder="مثال: تصميم هوية / تطوير صفحة / خدمة استشارية...">
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="padding:14px; margin-bottom:12px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
-            <div style="font-weight:900;">بنود</div>
-            <button type="button" class="btn-gold small" id="addItemBtn">➕ إضافة بند</button>
-          </div>
-
-          <div style="margin-top:12px;">
-            <table class="items-table">
-              <thead>
-                <tr>
-                  <th style="width:90px;">الكمية</th>
-                  <th>الوصف</th>
-                  <th style="width:140px;">سعر الوحدة</th>
-                  <th style="width:140px;">الإجمالي</th>
-                  <th style="width:90px;">حذف</th>
-                </tr>
-              </thead>
-              <tbody id="itemsBody"></tbody>
-            </table>
-          </div>
-
-          <div class="row" style="margin-top:12px;">
-            <div class="field" style="max-width:220px;">
-              <label>خصم (قيمة)</label>
-              <input id="discount" type="number" min="0" value="0">
-            </div>
-
-            <div class="field" style="max-width:220px;">
-              <label>TVA / ضريبة (%)</label>
-              <input id="taxPct" type="number" min="0" value="0">
-            </div>
-
-            <div class="field">
-              <label>ملاحظات (اختياري)</label>
-              <input id="notes" placeholder="مثال: صالح لمدة 7 أيام / الدفع 50% مقدّمًا...">
-            </div>
-          </div>
-
-          <div class="card" style="margin-top:12px; padding:12px;">
-            <div class="sum-box">
-              <div class="sum-line">الإجمالي الفرعي: <b id="subTotal">0.00</b> <span class="badge-soft" id="curBadge">EUR</span></div>
-              <div class="sum-line">الخصم: <b id="discVal">0.00</b></div>
-              <div class="sum-line">الضريبة: <b id="taxVal">0.00</b></div>
-              <div class="sum-line" style="font-size:16px; font-weight:900;">الإجمالي: <b id="grandTotal">0.00</b></div>
-            </div>
-          </div>
-
-          <div class="row" style="margin-top:12px;">
-         <button type="button" class="btn-primary small" id="previewBtn">👁️ معاينة</button>
-        <button type="button" class="btn-gold small" id="copyBtn">📋 نسخ</button>
-        <button type="button" class="btn-primary small" id="waBtn">📲 واتساب</button>
-        <button type="button" class="btn-primary small" id="callBtn">📞 اتصال</button>
-        <button type="button" class="btn-gold small" id="pdfBtn">⬇️ PDF</button>
-        <button type="button" class="btn-danger small" id="resetBtn">🔄 إعادة</button>
-          </div>
-
-          <small style="display:block; margin-top:10px; color:var(--muted);">
-            PDF لاحقًا: سنضيف زر "تصدير PDF" في خطوة قادمة.
-          </small>
-        </div>
-
-        <div class="card" style="padding:14px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
-            <div style="font-weight:900;">النص الجاهز</div>
-            <small style="color:var(--muted);">يتحدّث تلقائيًا مع المعاينة.</small>
-          </div>
-          <div style="margin-top:10px;">
-            <pre class="out" id="outText">—</pre>
-          </div>
-        </div>
-      `;
-function buildPrintableHTML(){
-  const txt = buildText().replace(/\n/g, "<br>");
-  const typeLabel = (docType.value === "invoice") ? "فاتورة" : "عرض سعر";
-
-  return `
-<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${typeLabel}${docNo.value ? " " + docNo.value : ""}</title>
-<style>
-  body{ font-family: Arial, sans-serif; padding:24px; }
-  .box{ border:1px solid #ccc; border-radius:12px; padding:16px; }
-  h1{ margin:0 0 10px; font-size:20px; }
-  .muted{ color:#555; font-size:12px; margin-bottom:14px; }
-  .content{ font-size:13px; line-height:1.8; }
-  @media print{
-    body{ padding:0; }
-    .box{ border:none; }
-  }
-</style>
-</head>
-<body>
-  <div class="box">
-    <h1>${typeLabel}${docNo.value ? " — " + esc(docNo.value) : ""}</h1>
-    <div class="muted">تاريخ: ${esc(docDate.value || todayISO())}</div>
-    <div class="content">${txt}</div>
-  </div>
-</body>
-</html>`;
-}
-
-pdfBtn.addEventListener("click", () => {
-  const w = window.open("", "_blank", "noopener");
-  if(!w){
-    alert("المتصفح منع فتح نافذة جديدة. اسمح بالـ Pop-ups ثم أعد المحاولة.");
-    return;
-  }
-  w.document.open();
-  w.document.write(buildPrintableHTML());
-  w.document.close();
-  w.focus();
-  // طباعة (ومنها حفظ PDF)
-  w.print();
-});
-      // ---------- State ----------
-      let state = loadState();
-      if(!state.items || !Array.isArray(state.items) || !state.items.length){
-        state.items = [
-          { qty: 1, name: "خدمة/منتج 1", price: 0 }
-        ];
-      }
-
-      // ---------- Elements ----------
-      const docType = document.getElementById("docType");
-      const currency = document.getElementById("currency");
-      const docNo = document.getElementById("docNo");
-      const docDate = document.getElementById("docDate");
-      const clientName = document.getElementById("clientName");
-      const clientPhone = document.getElementById("clientPhone");
-      const docSubject = document.getElementById("docSubject");
-
-      const itemsBody = document.getElementById("itemsBody");
-      const addItemBtn = document.getElementById("addItemBtn");
-
-      const discount = document.getElementById("discount");
-      const taxPct = document.getElementById("taxPct");
-      const notes = document.getElementById("notes");
-
-      const subTotalEl = document.getElementById("subTotal");
-      const discValEl = document.getElementById("discVal");
-      const taxValEl = document.getElementById("taxVal");
-      const grandTotalEl = document.getElementById("grandTotal");
-      const curBadge = document.getElementById("curBadge");
-
-      const outText = document.getElementById("outText");
-      const previewBtn = document.getElementById("previewBtn");
-      const copyBtn = document.getElementById("copyBtn");
-      const waBtn = document.getElementById("waBtn");
-      const callBtn = document.getElementById("callBtn");
-        const pdfBtn  = document.getElementById("pdfBtn");
-      const resetBtn = document.getElementById("resetBtn");
-        callBtn.addEventListener("click", () => {
-  const phone = cleanPhoneForTel(clientPhone.value);
-  if(!phone){
-    alert("أدخل رقم الهاتف أولاً (مثال: +212... أو +966...).");
-    return;
-  }
-  window.location.href = "tel:" + phone;
-});
-      // ---------- Restore ----------
-      docType.value = state.docType || "quotation";
-      currency.value = state.currency || "EUR";
-      docNo.value = state.docNo || "";
-      docDate.value = state.docDate || todayISO();
-      clientName.value = state.clientName || "";
-      clientPhone.value = state.clientPhone || "";
-      docSubject.value = state.docSubject || "";
-      discount.value = (state.discount ?? 0);
-      taxPct.value = (state.taxPct ?? 0);
-      notes.value = state.notes || "";
-
-      function persist(){
-        const snap = {
-          docType: docType.value,
-          currency: currency.value,
-          docNo: docNo.value,
-          docDate: docDate.value,
-          clientName: clientName.value,
-          clientPhone: clientPhone.value,
-          docSubject: docSubject.value,
-          discount: num(discount.value),
-          taxPct: num(taxPct.value),
-          notes: notes.value,
-          items: state.items
-        };
-        saveState(snap);
-      }
-
-      function renderItems(){
-        itemsBody.innerHTML = "";
-        state.items.forEach((it, idx) => {
-          const tr = document.createElement("tr");
-
-          const lineTotal = num(it.qty) * num(it.price);
-
-          tr.innerHTML = `
-            <td><input class="item-qty" type="number" min="0" value="${esc(it.qty)}" data-idx="${idx}"></td>
-            <td><input class="item-name" type="text" value="${esc(it.name)}" data-idx="${idx}"></td>
-            <td><input class="item-price" type="number" min="0" value="${esc(it.price)}" data-idx="${idx}"></td>
-            <td style="font-weight:900;">${money(lineTotal)}</td>
-            <td>
-              <button type="button" class="btn-danger small" data-del="${idx}">🗑</button>
-            </td>
-          `;
-          itemsBody.appendChild(tr);
-        });
-      }
-
-      function calcTotals(){
-        const sub = state.items.reduce((a,it)=> a + num(it.qty)*num(it.price), 0);
-        const disc = Math.max(0, num(discount.value));
-        const taxable = Math.max(0, sub - disc);
-        const tax = taxable * (Math.max(0, num(taxPct.value))/100);
-        const grand = taxable + tax;
-
-        subTotalEl.textContent = money(sub);
-        discValEl.textContent = money(disc);
-        taxValEl.textContent = money(tax);
-        grandTotalEl.textContent = money(grand);
-        curBadge.textContent = currency.value;
-
-        return { sub, disc, tax, grand };
-      }
-
-      function buildText(){
-        const t = calcTotals();
-        const typeLabel = (docType.value === "invoice") ? "فاتورة" : "عرض سعر";
-
-        const lines = [];
-        lines.push(`${typeLabel}${docNo.value ? ` رقم: ${docNo.value}` : ""}`);
-        lines.push(`التاريخ: ${docDate.value || todayISO()}`);
-        if(clientName.value.trim()) lines.push(`العميل: ${clientName.value.trim()}`);
-        if(docSubject.value.trim()) lines.push(`الموضوع: ${docSubject.value.trim()}`);
-        lines.push("");
-        lines.push("البنود:");
-        state.items.forEach((it,i)=>{
-          const lt = num(it.qty)*num(it.price);
-          lines.push(`${i+1}) ${it.name} — كمية: ${it.qty} — سعر: ${money(num(it.price))} — إجمالي: ${money(lt)} ${currency.value}`);
-        });
-        lines.push("");
-        lines.push(`الإجمالي الفرعي: ${money(t.sub)} ${currency.value}`);
-        if(t.disc>0) lines.push(`الخصم: -${money(t.disc)} ${currency.value}`);
-        if(taxPct.value && num(taxPct.value)>0) lines.push(`الضريبة (${money(num(taxPct.value))}%): ${money(t.tax)} ${currency.value}`);
-        lines.push(`الإجمالي: ${money(t.grand)} ${currency.value}`);
-        if(notes.value.trim()){
-          lines.push("");
-          lines.push(`ملاحظات: ${notes.value.trim()}`);
-        }
-        return lines.join("\n");
-      }
-
-      function refresh(){
-        renderItems();
-        calcTotals();
-        outText.textContent = buildText();
-        persist();
-      }
-
-      // ---------- Events ----------
-      addItemBtn.addEventListener("click", () => {
-        state.items.push({ qty: 1, name: `خدمة/منتج ${state.items.length+1}`, price: 0 });
-        refresh();
-      });
-
-      itemsBody.addEventListener("input", (e) => {
-        const qty = e.target.closest("input.item-qty");
-        const name = e.target.closest("input.item-name");
-        const price = e.target.closest("input.item-price");
-
-        if(qty){
-          const idx = Number(qty.getAttribute("data-idx"));
-          state.items[idx].qty = num(qty.value);
-          refresh();
-        }
-        if(name){
-          const idx = Number(name.getAttribute("data-idx"));
-          state.items[idx].name = name.value;
-          refresh();
-        }
-        if(price){
-          const idx = Number(price.getAttribute("data-idx"));
-          state.items[idx].price = num(price.value);
-          refresh();
-        }
-      });
-
-      itemsBody.addEventListener("click", (e) => {
-        const del = e.target.closest("button[data-del]");
-        if(!del) return;
-        const idx = Number(del.getAttribute("data-del"));
-        state.items.splice(idx,1);
-        if(!state.items.length) state.items.push({ qty: 1, name: "خدمة/منتج 1", price: 0 });
-        refresh();
-      });
-
-      [docType,currency,docNo,docDate,clientName,clientPhone,docSubject,discount,taxPct,notes].forEach(el=>{
-        el.addEventListener("input", refresh);
-        el.addEventListener("change", refresh);
-      });
-
-      previewBtn.addEventListener("click", () => {
-        outText.textContent = buildText();
-        const old = previewBtn.textContent;
-        previewBtn.textContent = "✅ تم";
-        setTimeout(()=> previewBtn.textContent = old, 900);
-      });
-
-      copyBtn.addEventListener("click", async () => {
-        const text = buildText();
-        try{
-          await navigator.clipboard.writeText(text);
-          const old = copyBtn.textContent;
-          copyBtn.textContent = "✅ تم النسخ";
-          setTimeout(()=> copyBtn.textContent = old, 1000);
-        }catch{
-          alert("تعذر النسخ. جرّب النسخ اليدوي.");
-        }
-      });
-
-     waBtn.addEventListener("click", () => {
-  const text = buildText();
-
-  const phone = cleanPhone(clientPhone.value);
-
-        function cleanPhoneForTel(raw){
-  let p = String(raw || "").trim();
-  p = p.replace(/[^\d+]/g, "");
-  if(p.startsWith("00")) p = "+" + p.slice(2);
-  // tel يسمح بـ +
-  return p;
-}
-
-  const url = phone
-    ? ("https://wa.me/" + phone + "?text=" + encodeURIComponent(text))
-    : ("https://wa.me/?text=" + encodeURIComponent(text));
-
-  window.open(url, "_blank", "noopener");
-});
-
-      resetBtn.addEventListener("click", () => {
-        if(!confirm("إعادة ضبط هذه الصفحة فقط؟")) return;
-        localStorage.removeItem(LS_INV);
-        state = {
-          docType: "quotation",
-          currency: "EUR",
-          docNo: "",
-          docDate: todayISO(),
-          clientName: "",
-          clientPhone: "",
-          docSubject: "",
-          discount: 0,
-          taxPct: 0,
-          notes: "",
-          items: [{ qty: 1, name: "خدمة/منتج 1", price: 0 }]
-        };
-        // apply to UI
-        docType.value = state.docType;
-        currency.value = state.currency;
-        docNo.value = state.docNo;
-        docDate.value = state.docDate;
-        clientName.value = state.clientName;
-        clientPhone.value = state.clientPhone;
-        docSubject.value = state.docSubject;
-        discount.value = state.discount;
-        taxPct.value = state.taxPct;
-        notes.value = state.notes;
-
-        refresh();
-      });
-
-      // first render
-      refresh();
+      render();
     }
 
     initPage();
