@@ -41,6 +41,7 @@ statusBtn?.addEventListener("click", async (e) => {
   if (!confirmLogout) return;
 
   try {
+    stopReminderScheduler();
     await auth.signOut();
     // لا داعي ل reload غالباً لأن onAuthStateChanged سيُحدّث الواجهة
     // لكن نتركه لضمان التحديث على كل الأجهزة:
@@ -98,6 +99,10 @@ statusBtn?.addEventListener("click", async (e) => {
   const doneCount = document.getElementById("doneCount");
   const todoCount = document.getElementById("todoCount");
   const overdueCount = document.getElementById("overdueCount");
+
+
+
+  
     /* ===============================
      PLANNER DOM
   =============================== */
@@ -269,6 +274,7 @@ plannerBody?.addEventListener("click", (e) => {
       renderTasks();
       renderPlanner();
       updateStats();
+      startReminderScheduler();
     });
 
     /* ===============================
@@ -529,6 +535,104 @@ plannerBody?.addEventListener("click", (e) => {
     if (!task?.due || task?.done) return false;
     return new Date(task.due) < new Date();
   }
+
+/* ===============================
+   REMINDERS (In-App + Web Notification while app is open)
+   يعتمد على task.due (ISO)
+=============================== */
+const REMINDER_CHECK_EVERY_MS = 30 * 1000; // فحص كل 30 ثانية
+const REMINDER_WINDOW_MS = 60 * 1000;      // نافذة دقيقة لتجنب تفويت التنبيه
+
+let reminderTimer = null;
+
+function dueMs(task) {
+  const d = toDateSafe(task?.due);
+  return d ? d.getTime() : NaN;
+}
+
+function notifiedKey(taskId, whenMs) {
+  return `reminded_${taskId}_${whenMs}`;
+}
+
+function wasReminded(taskId, whenMs) {
+  try { return localStorage.getItem(notifiedKey(taskId, whenMs)) === "1"; }
+  catch { return false; }
+}
+
+function markReminded(taskId, whenMs) {
+  try { localStorage.setItem(notifiedKey(taskId, whenMs), "1"); }
+  catch {}
+}
+
+async function requestNotifyPermission() {
+  if (!("Notification" in window)) return false;
+  if (Notification.permission === "granted") return true;
+  if (Notification.permission === "denied") return false;
+
+  // الأفضل طلب الإذن عبر زر (تفاعل المستخدم)، لكن نضعها هنا للاحتياط
+  const p = await Notification.requestPermission();
+  return p === "granted";
+}
+
+function showInAppReminder(task) {
+  // بسيط وواضح. إذا تحب لاحقًا نحوله لمودال جميل بدل alert
+  alert(`⏰ حان وقت تنفيذ المهمة:\n\n${task.title || ""}`);
+}
+
+function showWebReminder(task) {
+  if (!("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+
+  new Notification("⏰ تذكير مهمة", {
+    body: task.title || "لديك مهمة حان وقتها",
+    // icon: "/JYD/icons/icon-192.png",
+    // tag يساعد على تقليل التكرار في بعض المتصفحات
+    tag: `task_${task.id}`
+  });
+}
+
+async function checkRemindersNow() {
+  const now = Date.now();
+
+  for (const task of allTasks) {
+    if (!task?.due) continue;
+    if (task.done) continue;
+
+    const whenMs = dueMs(task);
+    if (!Number.isFinite(whenMs)) continue;
+
+    const diff = whenMs - now;
+
+    // يعتبر "وصل الوقت" إذا دخلنا خلال دقيقة بعد وقت التنفيذ
+    const isDueNow = diff <= 0 && diff >= -REMINDER_WINDOW_MS;
+
+    if (isDueNow && !wasReminded(task.id, whenMs)) {
+      markReminded(task.id, whenMs);
+
+      // تنبيه داخل التطبيق
+      showInAppReminder(task);
+
+      // إشعار متصفح (اختياري) — لن يظهر إلا إذا المستخدم منح الإذن
+      await requestNotifyPermission();
+      showWebReminder(task);
+    }
+  }
+}
+
+function startReminderScheduler() {
+  if (reminderTimer) clearInterval(reminderTimer);
+
+  // فحص مباشر عند تشغيل الجدولة
+  checkRemindersNow();
+
+  reminderTimer = setInterval(checkRemindersNow, REMINDER_CHECK_EVERY_MS);
+}
+
+function stopReminderScheduler() {
+  if (reminderTimer) clearInterval(reminderTimer);
+  reminderTimer = null;
+}
+
 
   function updateStats() {
     const done = allTasks.filter(t => t.done).length;
